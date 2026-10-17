@@ -1631,7 +1631,252 @@ footer > div p:first-child {
     scroll-behavior: auto !important;
   }
 }
-.poster-title { overflow-wrap: anywhere; }
+.poster-title {
+  overflow-wrap: anywhere;
+}
 @media (max-width: 600px) {
-  .poster-title { font-size: clamp(18px, 5vw, 23px); line-height: 1.08; }
+  .poster-title {
+    font-size: clamp(18px, 5vw, 23px);
+    line-height: 1.08;
+  }
+}
+/* Poster-led category destinations, informed by Design-MCP's Netflix reference. */
+nav a {
+  display: flex;
+  align-items: center;
+  position: relative;
+  font-size: 13px;
+  color: #b7bdbb;
+}
+nav a.active {
+  color: white;
+}
+nav a.active::after {
+  content: "";
+  position: absolute;
+  bottom: 20px;
+  left: 40%;
+  height: 4px;
+  width: 16px;
+  border-radius: 4px;
+  background: #d5ed88;
+}
+.artwork {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+.tmdb-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.tmdb-image[data-loaded="true"] {
+  opacity: 1;
+}
+.tmdb-image[hidden] {
+  display: none;
+}
+.artwork::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(0deg, #07100bb3, transparent 50%);
+}
+.hero .artwork::after {
+  background:
+    linear-gradient(90deg, #0a100fe8, #0a100f10),
+    linear-gradient(0deg, #101110, transparent 65%);
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+.hero .artwork img {
+  object-position: center 30%;
+}
+.hero-bottom,
+.hero-side {
+  z-index: 1;
+}
+.poster {
+  aspect-ratio: 2/3;
+}
+.poster:has(.tmdb-image[data-loaded="true"]) .poster-title {
+  display: none;
+}
+.poster:has(.tmdb-image[data-loaded="true"]) .card-tag {
+  display: none;
+}
+.grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 28px 18px;
+}
+.poster-title {
+  font-size: 23px;
+  left: 12px;
+  bottom: 18px;
+}
+.card-tag {
+  left: 9px;
+  top: 9px;
+  font-size: 5px;
+}
+.card-info h3 {
+  font-size: 11px;
+}
+.modal-art {
+  position: relative;
+}
+.modal-art .artwork::after {
+  background: linear-gradient(0deg, #171918, transparent 80%);
+}
+.modal-art .tmdb-image {
+  object-position: center 30%;
+}
+.browse-destinations {
+  padding: 30px 5% 55px;
+}
+.destination-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.destination {
+  display: flex;
+  align-items: flex-end;
+  min-height: 240px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 30px;
+  border: 1px solid #ffffff20;
+  isolation: isolate;
+}
+.destination .artwork {
+  z-index: -1;
+  transition: transform 0.4s;
+}
+.destination:hover .artwork {
+  transform: scale(1.04);
+}
+.destination .artwork::after {
+  background:
+    linear-gradient(90deg, #09130ee6, #09130e35),
+    linear-gradient(0deg, #09130ec9, transparent);
+}
+.destination h2 {
+  font-size: 40px;
+  margin: 12px 0 7px;
+}
+.destination p {
+  font-size: 12px;
+  color: #c2cdb6;
+}
+.destination .eyebrow {
+  font-size: 8px;
+  color: #d5ed88;
+}
+.destination > svg {
+  margin-left: auto;
+  align-self: center;
+  color: #d5ed88;
+}
+.destination .tmdb-image {
+  object-position: center 30%;
+}
+.image-credit {
+  flex-basis: 100%;
+  font-size: 9px;
+  color: #78876b;
+  line-height: 1.7;
+  margin: 5px 0 0;
+}
+.image-credit a {
+  color: #bdd09e;
+}
+footer {
+  flex-wrap: wrap;
+}
+.catalog-page {
+  padding-bottom: 65px;
+}
+.extra-section .grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  .catalog .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .extra-section .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .destination {
+    min-height: 220px;
+    padding: 23px;
+  }
+  .destination h2 {
+    font-size: 32px;
+  }
+}
+@media (max-width: 600px) {
+  nav a {
+    font-size: 12px;
+  }
+  nav a.active::after {
+    bottom: 5px;
+  }
+  .catalog .grid,
+  .extra-section .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .poster {
+    aspect-ratio: 2/3;
+  }
+  .poster-title {
+    font-size: 23px;
+  }
+  .browse-destinations {
+    padding-top: 10px;
+  }
+  .destination-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .destination {
+    min-height: 190px;
+    padding: 25px;
+  }
+  .destination h2 {
+    font-size: 34px;
+  }
+  .destination p {
+    font-size: 11px;
+  }
+  .image-credit {
+    width: 100% !important;
+  }
+  .card-info h3 {
+    font-size: 11px;
+  }
+}
+.poster-title {
+  font-size: clamp(16px, 1.5vw, 23px);
+}
+@media (max-width: 600px) {
+  .poster-title {
+    font-size: clamp(16px, 5vw, 21px);
+  }
 }

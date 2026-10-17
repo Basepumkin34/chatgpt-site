@@ -24,10 +24,11 @@ import {
   X,
   ArrowDownWideNarrow,
 } from "lucide-react";
-import { titles, featured, genres, artUrl } from "./catalog";
+import { titles, featured, genres } from "./catalog";
 import { mergeProviders } from "./providers";
 import { useStored } from "./storage";
 import Dialog from "./Dialog";
+import Artwork from "./Artwork";
 import Player from "./Player";
 import Settings from "./Settings";
 import "./style.css";
@@ -38,10 +39,8 @@ function Card({ title, saved, toggle, open, rank }) {
         className="poster"
         onClick={() => open(title)}
         aria-label={`View ${title.name}`}
-        style={{
-          backgroundImage: `linear-gradient(0deg,rgba(4,10,9,.85),transparent 80%),url(${artUrl(title)})`,
-        }}
       >
+        <Artwork title={title} />
         <span className="card-tag">
           {title.type === "Movies" ? title.director : "THE COMPLETE STORY"}
         </span>
@@ -84,8 +83,22 @@ function getLinkedTitle() {
     ) || null
   );
 }
+const browseRoutes = {
+  Home: "home",
+  Movies: "movies",
+  "TV Shows": "tv-shows",
+  "My List": "my-list",
+};
+function getBrowseTab() {
+  const route = location.hash.slice(1);
+  return (
+    Object.keys(browseRoutes).find((key) => browseRoutes[key] === route) ||
+    getLinkedTitle()?.type ||
+    "Home"
+  );
+}
 function App() {
-  const [tab, setTab] = useState("Discover"),
+  const [tab, setTab] = useState(getBrowseTab),
     [query, setQuery] = useState(""),
     [genre, setGenre] = useState("All genres"),
     [sort, setSort] = useState("curated"),
@@ -119,6 +132,7 @@ function App() {
   useEffect(() => {
     function sync() {
       setSelected(getLinkedTitle());
+      setTab(getBrowseTab());
       setPlaying(false);
     }
     window.addEventListener("hashchange", sync);
@@ -152,17 +166,33 @@ function App() {
   function close() {
     setSelected(null);
     setPlaying(false);
-    history.replaceState(null, "", location.pathname + location.search);
+    history.replaceState(null, "", `#${browseRoutes[tab]}`);
   }
   function navigate(name) {
+    if (location.hash !== `#${browseRoutes[name]}`)
+      history.pushState(null, "", `#${browseRoutes[name]}`);
+    window.scrollTo({ top: 0 });
     setTab(name);
     setQuery("");
     setGenre("All genres");
     setSort("curated");
   }
+  function followCategory(event, name) {
+    if (
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    navigate(name);
+  }
   useEffect(() => {
     const sync = () => {
       setSelected(getLinkedTitle());
+      setTab(getBrowseTab());
       setPlaying(false);
     };
     window.addEventListener("popstate", sync);
@@ -195,10 +225,7 @@ function App() {
     .filter(Boolean)
     .slice(0, 4);
   const showDiscovery =
-    tab === "Discover" &&
-    !query &&
-    genre === "All genres" &&
-    sort === "curated";
+    tab === "Home" && !query && genre === "All genres" && sort === "curated";
   const card = (t) => (
     <Card
       key={t.id}
@@ -214,29 +241,30 @@ function App() {
         <header>
           <a
             className="logo"
-            href="#"
+            href="#home"
             onClick={(e) => {
               e.preventDefault();
-              navigate("Discover");
+              navigate("Home");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
             FRAME<span>●</span>
           </a>
           <nav aria-label="Main navigation">
-            {["Discover", "Movies", "TV Shows", "My List"].map((n) => (
-              <button
+            {["Home", "Movies", "TV Shows", "My List"].map((n) => (
+              <a
+                href={`#${browseRoutes[n]}`}
                 className={tab === n ? "active" : ""}
                 aria-label={n}
                 aria-current={tab === n ? "page" : undefined}
-                onClick={() => navigate(n)}
+                onClick={(e) => followCategory(e, n)}
                 key={n}
               >
                 {n}
                 {n === "My List" && saved.length > 0 && (
                   <span className="list-count">{saved.length}</span>
                 )}
-              </button>
+              </a>
             ))}
           </nav>
           <div className="header-right">
@@ -264,13 +292,9 @@ function App() {
           </div>
         </header>
         <main>
-          {tab === "Discover" && !query && (
-            <section
-              className="hero"
-              style={{
-                backgroundImage: `linear-gradient(90deg,rgba(10,16,15,.78),rgba(10,16,15,.02)),linear-gradient(0deg,#101110,transparent 70%),url(${artUrl(hero)})`,
-              }}
-            >
+          {tab === "Home" && !query && (
+            <section className="hero">
+              <Artwork title={hero} kind="backdrop" priority />
               <div className="hero-content" key={hero.id}>
                 <div className="eyebrow">
                   <span /> A WORLD WORTH WATCHING
@@ -359,115 +383,166 @@ function App() {
               </span>
             </section>
           )}
-          <section
-            className={`catalog ${tab !== "Discover" || query ? "catalog-page" : ""}`}
-            id="catalog"
-          >
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow muted">
-                  {tab === "My List"
-                    ? "YOUR OWN LITTLE FILM CLUB"
-                    : "THE GOOD STUFF, ALL IN ONE PLACE"}
-                </p>
-                <h2>
-                  {query
-                    ? `Results for “${query}”`
-                    : tab === "Discover"
-                      ? "Find your next obsession"
-                      : tab === "My List"
-                        ? "Saved for a good night"
-                        : tab}
-                </h2>
-              </div>
-              <div className="filter-controls">
-                <select
-                  aria-label="Filter by genre"
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
-                >
-                  {genres.map((g) => (
-                    <option key={g}>{g}</option>
-                  ))}
-                </select>
-                <label className="sort-control">
-                  <ArrowDownWideNarrow size={15} />
+          {tab !== "Home" || query ? (
+            <section
+              className={`catalog ${tab !== "Home" || query ? "catalog-page" : ""}`}
+              id="catalog"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow muted">
+                    {tab === "My List"
+                      ? "YOUR OWN LITTLE FILM CLUB"
+                      : "THE GOOD STUFF, ALL IN ONE PLACE"}
+                  </p>
+                  <h2>
+                    {query
+                      ? `Results for “${query}”`
+                      : tab === "Home"
+                        ? "Find your next obsession"
+                        : tab === "My List"
+                          ? "Saved for a good night"
+                          : tab}
+                  </h2>
+                </div>
+                <div className="filter-controls">
                   <select
-                    aria-label="Sort titles"
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
+                    aria-label="Filter by genre"
+                    value={genre}
+                    onChange={(e) => setGenre(e.target.value)}
                   >
-                    <option value="curated">Curated order</option>
-                    <option value="newest">Newest releases</option>
-                    <option value="oldest">Oldest first</option>
-                    <option value="az">A–Z</option>
+                    {genres.map((g) => (
+                      <option key={g}>{g}</option>
+                    ))}
                   </select>
-                </label>
+                  <label className="sort-control">
+                    <ArrowDownWideNarrow size={15} />
+                    <select
+                      aria-label="Sort titles"
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value)}
+                    >
+                      <option value="curated">Curated order</option>
+                      <option value="newest">Newest releases</option>
+                      <option value="oldest">Oldest first</option>
+                      <option value="az">A–Z</option>
+                    </select>
+                  </label>
+                </div>
               </div>
-            </div>
-            <div className="collection-tabs" aria-label="Browse genres">
-              {["All genres", "Sci-Fi", "Thriller", "Drama", "Documentary"].map(
-                (g) => (
+              <div className="collection-tabs" aria-label="Browse genres">
+                {[
+                  "All genres",
+                  "Sci-Fi",
+                  "Thriller",
+                  "Drama",
+                  "Documentary",
+                ].map((g) => (
                   <button
                     key={g}
                     aria-pressed={genre === g}
                     className={genre === g ? "chosen" : ""}
                     onClick={() => setGenre(g)}
                   >
-                    {g === "All genres" ? "Made for movie nights" : g}
+                    {g === "All genres" ? "All titles" : g}
                   </button>
-                ),
-              )}
-              <span className="catalog-note">
-                {filtered.length} stories to get lost in
-              </span>
-            </div>
-            {filtered.length ? (
-              <div className="grid">
-                {(showDiscovery ? filtered.slice(0, 8) : filtered).map(card)}
+                ))}
+                <span className="catalog-note">
+                  {filtered.length} stories to get lost in
+                </span>
               </div>
-            ) : (
-              <div className="empty">
-                {tab === "My List" ? (
-                  <Bookmark size={32} />
-                ) : (
-                  <Search size={32} />
-                )}
-                <h3>
-                  {tab === "My List" && !query
-                    ? "Your next favorites belong here"
-                    : "No stories found this time"}
-                </h3>
-                <p>
-                  {tab === "My List" && !query
-                    ? "Save a film or series with the + button. Your list stays with this browser."
-                    : "Try a different title, director, or genre."}
-                </p>
+              {filtered.length ? (
+                <div className="grid">
+                  {(showDiscovery ? filtered.slice(0, 8) : filtered).map(card)}
+                </div>
+              ) : (
+                <div className="empty">
+                  {tab === "My List" ? (
+                    <Bookmark size={32} />
+                  ) : (
+                    <Search size={32} />
+                  )}
+                  <h3>
+                    {tab === "My List" && !query
+                      ? "Your next favorites belong here"
+                      : "No stories found this time"}
+                  </h3>
+                  <p>
+                    {tab === "My List" && !query
+                      ? "Save a film or series with the + button. Your list stays with this browser."
+                      : "Try a different title, director, or genre."}
+                  </p>
+                  <button
+                    className="secondary"
+                    onClick={() => {
+                      navigate("Home");
+                      setQuery("");
+                    }}
+                  >
+                    Explore the collection <ChevronRight size={15} />
+                  </button>
+                </div>
+              )}
+              {showDiscovery && (
                 <button
-                  className="secondary"
+                  className="view-collection"
                   onClick={() => {
-                    navigate("Discover");
-                    setQuery("");
+                    setSort("az");
+                    document
+                      .querySelector("#catalog")
+                      .scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  Explore the collection <ChevronRight size={15} />
+                  View the whole collection <ArrowUpRight size={15} />
                 </button>
+              )}
+            </section>
+          ) : (
+            <section
+              className="browse-destinations"
+              aria-label="Browse collections"
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow muted">YOUR NEXT GREAT WATCH</p>
+                  <h2>What are you in the mood for?</h2>
+                </div>
               </div>
-            )}
-            {showDiscovery && (
-              <button
-                className="view-collection"
-                onClick={() => {
-                  setSort("az");
-                  document
-                    .querySelector("#catalog")
-                    .scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                View the whole collection <ArrowUpRight size={15} />
-              </button>
-            )}
-          </section>
+              <div className="destination-grid">
+                {[
+                  {
+                    name: "Movies",
+                    title: titles[0],
+                    text: "Big-screen stories. Your screen.",
+                    count: 12,
+                  },
+                  {
+                    name: "TV Shows",
+                    title: titles[2],
+                    text: "The art of one more episode.",
+                    count: 4,
+                  },
+                ].map((collection) => (
+                  <a
+                    className="destination"
+                    href={`#${browseRoutes[collection.name]}`}
+                    onClick={(e) => followCategory(e, collection.name)}
+                    key={collection.name}
+                  >
+                    <Artwork title={collection.title} kind="backdrop" />
+                    <div>
+                      <span className="eyebrow">
+                        {collection.count} TITLES TO EXPLORE
+                      </span>
+                      <h2>{collection.name}</h2>
+                      <p>{collection.text}</p>
+                    </div>
+                    <ArrowUpRight size={25} />
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
           {showDiscovery && (
             <>
               {recentTitles.length > 0 && (
@@ -490,28 +565,10 @@ function App() {
                   <div className="grid">{recentTitles.map(card)}</div>
                 </section>
               )}
-              <section className="catalog extra-section">
-                <div className="section-heading">
-                  <div>
-                    <p className="eyebrow muted">THE ART OF ONE MORE EPISODE</p>
-                    <h2>Stories worth staying in for</h2>
-                  </div>
-                  <button
-                    className="text-button"
-                    onClick={() => navigate("TV Shows")}
-                  >
-                    All series <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="grid">
-                  {titles.filter((t) => t.type === "TV Shows").map(card)}
-                </div>
-              </section>
               <section
                 className="editorial"
                 style={{
-                  backgroundImage:
-                    `linear-gradient(90deg,#17231df2,#17231d66),url(${import.meta.env.BASE_URL}art/planet-earth.svg)`,
+                  backgroundImage: `linear-gradient(90deg,#17231df2,#17231d66),url(${import.meta.env.BASE_URL}art/planet-earth.svg)`,
                 }}
               >
                 <div>
@@ -527,10 +584,9 @@ function App() {
                   </p>
                   <button
                     onClick={() => {
+                      navigate("TV Shows");
                       setGenre("Documentary");
-                      document
-                        .querySelector("#catalog")
-                        .scrollIntoView({ behavior: "smooth" });
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   >
                     Explore documentaries <ChevronRight size={16} />
@@ -546,10 +602,10 @@ function App() {
         <footer>
           <a
             className="logo"
-            href="#"
+            href="#home"
             onClick={(e) => {
               e.preventDefault();
-              navigate("Discover");
+              navigate("Home");
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
@@ -557,15 +613,23 @@ function App() {
           </a>
           <div>
             <p>For the love of stories.</p>
-            <p>
-              Curated catalog · Original illustrated artwork · Third-party
-              players
-            </p>
+            <p>Curated catalog · Title posters · Third-party players</p>
           </div>
           <button className="footer-settings" onClick={() => setSettings(true)}>
             <SettingsIcon size={14} />
             Playback settings
           </button>
+          <p className="image-credit">
+            Images provided by{" "}
+            <a
+              href="https://www.themoviedb.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              TMDB
+            </a>
+            . This product is not endorsed or certified by TMDB.
+          </p>
         </footer>
       </div>
       {selected && (
@@ -597,12 +661,9 @@ function App() {
             </>
           ) : (
             <>
-              <div
-                className="modal-art"
-                style={{
-                  backgroundImage: `linear-gradient(0deg,#171918,transparent),url(${artUrl(selected)})`,
-                }}
-              />
+              <div className="modal-art">
+                <Artwork title={selected} kind="backdrop" priority />
+              </div>
               <div className="modal-content">
                 <p className="eyebrow">
                   {selected.type === "Movies"

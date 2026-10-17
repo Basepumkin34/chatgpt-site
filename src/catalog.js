@@ -211,4 +211,38 @@ export const titles = [
 ];
 export const featured = [titles[0], titles[1], titles[4], titles[2]];
 export const genres = ["All genres", ...new Set(titles.map((t) => t.genre))];
-export const artUrl = (title) => `${import.meta.env.BASE_URL}art/${title.art}.svg`;
+export const artUrl = (title) =>
+  `${import.meta.env.BASE_URL}art/${title.art}.svg`;
+
+// TMDB image filenames are kept separate from title IDs: the image service
+// requires image paths, not a movie or series ID. Failed images use local art.
+const images = {
+  dune: ["1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", "xOMo8BRK7PfcJvN5uULul7OGRej.jpg"],
+  interstellar: [
+    "gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+    "xJHokMbljvjADYdit5fK5VQsX9v.jpg",
+  ],
+  dark: ["apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg", "75HgaphatW0PDI3XIHQWZUpbhn6.jpg"],
+  inception: ["oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"],
+  "blade-runner": [
+    "gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
+    "ilRyazdMJwN05exqhwK4tJtH9y8.jpg",
+  ],
+  "breaking-bad": ["3xnWaLQjelJDDF7LT1WBo6f4BRe.jpg"],
+  oppenheimer: ["ptpr0kGAckfQkJeJIt8st5dglvd.jpg"],
+  arrival: ["x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"],
+  chernobyl: ["hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg"],
+  whiplash: ["7fn624j5lj3xTme2SgiLCeuedmO.jpg"],
+  budapest: ["eWdyYQreja6JGCzqHWXpWHDrrPo.jpg"],
+  spiderverse: ["iiZZdoQBEYBv6id8su7ImL0oCbD.jpg"],
+  batman: ["74xTEgt7R36Fpooo50r9T25onhq.jpg"],
+  prestige: ["bdN3gXuIZYaJP7ftKK2sU0nPtEA.jpg"],
+  parasite: ["7IiTTgloJzvGI1TAYymCfbfl3vT.jpg"],
+};
+export function imageUrl(title, kind = "poster") {
+  if (title.art === "planet-earth")
+    return `${import.meta.env.BASE_URL}posters/planet-earth-ii.avif`;
+  const paths = images[title.art];
+  if (!paths) return "";
+  return `https://image.tmdb.org/t/p/${kind === "poster" ? "w500" : "w1280"}/${kind === "poster" ? paths[0] : paths[1] || paths[0]}`;
+}

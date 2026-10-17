@@ -50,7 +50,6 @@ export default function Player({ title, providers, onOpened }) {
               allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
               allowFullScreen
               referrerPolicy="no-referrer"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
               onLoad={() => setLoading(false)}
             />
             {loading && (

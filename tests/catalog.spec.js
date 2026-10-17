@@ -13,19 +13,37 @@ test("search, independent genre and sort controls, and persisted list", async ({
   page,
 }) => {
   await page.goto("/");
+  await expect(page.locator(".card")).toHaveCount(0);
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Movies", exact: true })
+    .click();
+  await expect(page).toHaveURL(/#movies$/);
   await expect(page.locator(".card")).toHaveCount(12);
-  await page.getByRole("button", { name: "TV Shows", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "TV Shows", exact: true })
+    .click();
   await expect(page.locator(".card")).toHaveCount(4);
-  await page.getByRole("button", { name: "Discover", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Home", exact: true })
+    .click();
   await page.getByLabel("Search titles").fill("interstellar");
   await expect(page.locator(".card")).toHaveCount(1);
   await page
     .getByRole("button", { name: "Save Interstellar", exact: true })
     .click();
-  await page.getByRole("button", { name: "My List", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "My List", exact: true })
+    .click();
   await expect(page.locator(".card")).toHaveCount(1);
   await page.reload();
-  await page.getByRole("button", { name: "My List", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "My List", exact: true })
+    .click();
   await expect(
     page.getByRole("button", { name: "View Interstellar" }),
   ).toBeVisible();
@@ -33,7 +51,10 @@ test("search, independent genre and sort controls, and persisted list", async ({
     .getByRole("button", { name: "Remove Interstellar", exact: true })
     .click();
   await expect(page.getByText("Your next favorites belong here")).toBeVisible();
-  await page.getByRole("button", { name: "Movies", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("link", { name: "Movies", exact: true })
+    .click();
   await page.getByLabel("Filter by genre").selectOption("Sci-Fi");
   await expect(page.locator(".card")).toHaveCount(4);
   await page.getByLabel("Sort titles").selectOption("newest");
@@ -55,6 +76,7 @@ test("movie deep links, player source switching, unavailable source, and Escape 
     "src",
     "https://vidsrc.sh/embed/movie/693134",
   );
+  await expect(page.locator("iframe")).not.toHaveAttribute("sandbox");
   await page.getByRole("button", { name: "VidLink", exact: true }).click();
   await expect(page.locator("iframe")).toHaveAttribute(
     "src",
@@ -65,7 +87,7 @@ test("movie deep links, player source switching, unavailable source, and Escape 
   await expect(page.locator("iframe")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page).not.toHaveURL(/#/);
+  await expect(page).toHaveURL(/#movies$/);
 });
 test("TV player uses real season and episode IDs, resets episode on season change", async ({
   page,
@@ -120,6 +142,7 @@ test("desktop and mobile render local artwork without console errors or overflow
 }) => {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("https://image.tmdb.org/**", (route) => route.abort());
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -138,11 +161,58 @@ test("desktop and mobile render local artwork without console errors or overflow
   await page
     .getByRole("button", { name: "Feature Dune: Part Two", exact: true })
     .click();
-  await page.locator(".hero-content").evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
+  await page
+    .locator(".hero-content")
+    .evaluate((el) =>
+      Promise.all(el.getAnimations().map((animation) => animation.finished)),
+    );
   await page.screenshot({ path: "test-results/mobile.png", fullPage: true });
-  await expect(page.locator(".hero")).toHaveCSS(
+  await expect(page.locator(".hero .artwork")).toHaveCSS(
     "background-image",
     /\/art\/dune.svg/,
   );
   expect(errors).toEqual([]);
+});
+
+test("category links survive reload and browser history", async ({ page }) => {
+  await page.goto("/#movies");
+  await expect(page.locator(".card")).toHaveCount(12);
+  await page.reload();
+  await expect(
+    page
+      .getByRole("navigation")
+      .getByRole("link", { name: "Movies", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "TV Shows", exact: true })
+    .click();
+  await expect(page).toHaveURL(/#tv-shows$/);
+  await expect(page.locator(".card")).toHaveCount(4);
+  await page.goBack();
+  await expect(page).toHaveURL(/#movies$/);
+  await expect(page.locator(".card")).toHaveCount(12);
+});
+test("posters use TMDB images and fall back cleanly when the host fails", async ({
+  page,
+}) => {
+  await page.route("https://image.tmdb.org/**", (route) =>
+    route.fulfill({
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="500" height="750"><rect width="500" height="750" fill="teal"/></svg>',
+    }),
+  );
+  await page.goto("/#movies");
+  const first = page.locator(".poster").first();
+  await expect(first.locator("img")).toHaveAttribute(
+    "src",
+    /^https:\/\/image\.tmdb\.org\/t\/p\/w500\//,
+  );
+  await expect(first.locator("img")).toHaveAttribute("data-loaded", "true");
+  await expect(first.locator(".poster-title")).toBeHidden();
+  await page.unroute("https://image.tmdb.org/**");
+  await page.route("https://image.tmdb.org/**", (route) => route.abort());
+  await page.reload();
+  await expect(first.locator("img")).toBeHidden();
+  await expect(first.locator(".poster-title")).toBeVisible();
 });
