@@ -31,3 +31,9 @@ These metadata references informed research; their full live design specificatio
 ## Final playback and image update
 
 Only three playback servers are registered, in fixed order: Server 1 (VidLink, default), Server 2 (Videasy), Server 3 (VidSrc). Old overrides for removed providers are ignored. TMDB image paths are now the primary artwork source; featured local film stills are network-error fallbacks. The archive remains unchanged and automatic enrichment remains disabled. The supplied Frank Mortgage Framer project URL returned HTTP 403 from this environment on October 17, 2026; its visual design could not be inspected or used as a verified reference.
+
+## Catalog preview flow
+
+Catalog image and title clicks now open a native modal quick view without losing search, filters, pagination or scroll. It includes photographic artwork, archival synopsis, metadata, save controls, a full-details link and an explicit Watch now action. Closing via Escape, close button or backdrop restores focus to the originating card. Modified clicks retain normal link behavior. No player is mounted until Watch now is chosen. The dedicated watch route starts with the title and a large player, and provides a browser fullscreen control with a fallback message when fullscreen is unavailable.
+
+The supplied Framer project was retried using the Playwright MCP browser: navigation failed with `net::ERR_TUNNEL_CONNECTION_FAILED`. This implementation follows the user's description of its catalog → preview → player flow; it is not a verified visual clone of the inaccessible project.

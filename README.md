@@ -1,6 +1,6 @@
 # Recepeit Vault
 
-A photographic film and television catalog built with React, Vite and React Router. Artwork uses TMDB image paths, with bundled photographic fallbacks for six featured movies if the image service cannot load. Clicking a title opens its own named page, for example `/movies/dune-part-two-693134`.
+A photographic film and television catalog built with React, Vite and React Router. Artwork uses TMDB image paths, with bundled photographic fallbacks for six featured movies if the image service cannot load. Clicking a catalog image opens a preview popup with synopsis, save controls, Full details and Watch now. Full details opens its named page, for example `/movies/dune-part-two-693134`; Watch now opens the dedicated player page with a fullscreen control.
 
 ## Run locally (Windows, macOS or Linux)
 

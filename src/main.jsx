@@ -53,6 +53,7 @@ import { mergeProviders } from "./providers";
 import { useStored } from "./storage";
 import Artwork from "./Artwork";
 import Player from "./Player";
+import Dialog from "./Dialog";
 import Settings from "./Settings";
 import "./style.css";
 const VaultContext = createContext();
@@ -92,6 +93,7 @@ function Shell() {
     {},
     (v) => v && typeof v === "object" && !Array.isArray(v),
   );
+  const [preview, setPreview] = useState(null);
   const [notice, setNotice] = useState(""),
     [search, setSearch] = useState("");
   const navigate = useNavigate(),
@@ -106,6 +108,7 @@ function Shell() {
   };
   useEffect(refresh, []);
   useEffect(() => {
+    setPreview(null);
     window.scrollTo({ top: 0 });
     setSearch(new URLSearchParams(location.search).get("q") || "");
   }, [location.pathname, location.search]);
@@ -137,6 +140,7 @@ function Shell() {
     providers,
     overrides,
     setOverrides,
+    openPreview: setPreview,
   };
   return (
     <VaultContext.Provider value={value}>
@@ -236,6 +240,7 @@ function Shell() {
           </span>
         </div>
       </footer>
+      {preview && <TitlePreview key={preview.id} summary={preview} onClose={() => setPreview(null)} />}
       {notice && (
         <div className="toast" role="status">
           <Check size={16} />
@@ -246,11 +251,18 @@ function Shell() {
   );
 }
 function Card({ title, wide = false }) {
-  const { saved, toggle } = useVault();
+  const { saved, toggle, openPreview } = useVault();
+  const previewClick = (e) => {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    openPreview(title);
+  };
   return (
     <article className={`title-card ${wide ? "wide-card" : ""}`}>
       <Link
         className="card-art"
+        onClick={previewClick}
+        aria-haspopup="dialog"
         to={titlePath(title)}
         aria-label={`View ${title.name}`}
       >
@@ -262,7 +274,7 @@ function Card({ title, wide = false }) {
       </Link>
       <div className="card-caption">
         <div>
-          <Link to={titlePath(title)} className="card-name">
+          <Link to={titlePath(title)} className="card-name" onClick={previewClick} aria-haspopup="dialog">
             {title.name}
           </Link>
           <p>
@@ -281,6 +293,49 @@ function Card({ title, wide = false }) {
         </button>
       </div>
     </article>
+  );
+}
+function TitlePreview({ summary, onClose }) {
+  const { saved, toggle } = useVault();
+  const [detail, setDetail] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let alive = true;
+    loadTitle(summary).then((title) => {
+      if (alive) setDetail(title);
+    }).catch(() => {
+      if (alive) setError("The synopsis couldn’t load. You can still open the title or watch.");
+    });
+    return () => { alive = false; };
+  }, [summary]);
+  const title = detail || summary;
+  return (
+    <Dialog title={`${title.name} preview`} onClose={onClose} wide>
+      <div className="preview-image">
+        <Artwork title={title} kind="backdrop" priority />
+        <span className="preview-image-shade" />
+        <span className="preview-category">{title.type === "Movies" ? "FILM" : "SERIES"} / RECEPEIT VAULT</span>
+      </div>
+      <div className="preview-body">
+        <p className="eyebrow">YOUR NEXT WATCH</p>
+        <h2>{title.name}</h2>
+        <div className="title-meta">
+          <span>{title.year || "Year not listed"}</span>
+          {title.length && <span>{title.length}</span>}
+          <span>{title.genre}</span>
+          {title.rating > 0 && <span className="rating"><Star size={13} fill="currentColor" />{title.rating.toFixed(1)}</span>}
+        </div>
+        <p className="preview-description" aria-live="polite">{title.description || error || (detail ? "Explore this title in the vault." : "Loading the synopsis…")}</p>
+        <div className="actions">
+          <Link className="button primary" to={`${titlePath(title)}/watch`}><Play size={18} fill="currentColor" />Watch now</Link>
+          <button className="button secondary" onClick={() => toggle(title)} aria-pressed={saved.includes(title.id)}>
+            {saved.includes(title.id) ? <Check size={18} /> : <Plus size={18} />}{saved.includes(title.id) ? "In My List" : "My List"}
+          </button>
+          <Link className="preview-details" to={titlePath(title)}>Full details<ArrowUpRight size={16} /></Link>
+        </div>
+        <p className="preview-genres">{(title.genres || [title.genre]).join(" / ")}</p>
+      </div>
+    </Dialog>
   );
 }
 function Rail({ label, title, items, to, wide = false }) {
@@ -736,7 +791,7 @@ function TitlePage({ type, watch = false }) {
     .slice(0, 10);
   return (
     <>
-      <section className={`title-hero ${watch ? "compact" : ""}`}>
+      {!watch && <section className="title-hero">
         <Artwork title={title} kind="backdrop" priority />
         <div className="spotlight-shade" />
         <div className="title-page-content">
@@ -805,9 +860,13 @@ function TitlePage({ type, watch = false }) {
             </a>
           </div>
         </div>
-      </section>
+      </section>}
       {watch ? (
-        <section className="watch-section" aria-label={`${title.name} player`}>
+        <section className="watch-section cinema-page" aria-label={`${title.name} player`}>
+          <div className="cinema-heading">
+            <Link className="back-link" to={titlePath(title)}><ArrowLeft size={17} />Title details</Link>
+            <div><p className="eyebrow">NOW WATCHING</p><h1>{title.name}</h1><p className="cinema-meta">{title.year} · {title.genre}{title.length ? ` · ${title.length}` : ""}</p></div>
+          </div>
           <Player
             key={title.id}
             title={title}

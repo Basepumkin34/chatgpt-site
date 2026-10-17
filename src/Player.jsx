@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ExternalLink,
+  Maximize,
   RefreshCw,
   Play,
   ChevronLeft,
@@ -8,6 +9,8 @@ import {
 } from "lucide-react";
 import { resolveEmbed } from "./providers";
 export default function Player({ title, providers, onOpened }) {
+  const screen = useRef(null);
+  const [fullscreenError, setFullscreenError] = useState("");
   const [source, setSource] = useState(
     () =>
       providers.find((p) => p[title.type === "Movies" ? "movie" : "tv"])?.id ||
@@ -43,7 +46,7 @@ export default function Player({ title, providers, onOpened }) {
   }
   return (
     <div className="watch-player">
-      <div className="player-screen">
+      <div className="player-screen" ref={screen}>
         {url ? (
           <>
             <iframe
@@ -70,11 +73,21 @@ export default function Player({ title, providers, onOpened }) {
           </div>
         )}
       </div>
+      {fullscreenError && <p role="status" className="episode-note">{fullscreenError}</p>}
       <div className="source-heading">
         <div>
           <span className="eyebrow muted">CHOOSE YOUR SOURCE</span>
           <p>Player not loading? Try another source.</p>
         </div>
+        <button className="button secondary" onClick={async () => {
+          setFullscreenError("");
+          try {
+            if (!screen.current?.requestFullscreen) throw new Error();
+            await screen.current.requestFullscreen();
+          } catch {
+            setFullscreenError("Use the player’s fullscreen control or open the player in a new tab.");
+          }
+        }}><Maximize size={17} />Fullscreen</button>
         <button
           className="icon-button"
           aria-label="Reload player"

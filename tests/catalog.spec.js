@@ -89,6 +89,11 @@ test("movies are paginated and navigate to a real named title page with reload",
   await page
     .getByRole("link", { name: "View Dune: Part Two", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/movies$/);
+  const preview = page.getByRole("dialog", { name: "Dune: Part Two preview" });
+  await expect(preview).toBeVisible();
+  await expect(preview.getByRole("heading", { name: "Dune: Part Two" })).toBeVisible();
+  await preview.getByRole("link", { name: "Full details" }).click();
   await expect(page).toHaveURL(/\/movies\/dune-part-two-693134$/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator("h1")).toHaveText("Dune: Part Two");
@@ -104,6 +109,9 @@ test("search finds titles outside the curated set and loads a real synopsis", as
   await page
     .getByRole("link", { name: "View The Shawshank Redemption", exact: true })
     .click();
+  const preview = page.getByRole("dialog");
+  await expect(preview.locator(".preview-description")).toContainText("Framed in the 1940s");
+  await preview.getByRole("link", { name: "Full details" }).click();
   await expect(page).toHaveURL(/\/movies\/the-shawshank-redemption-278$/);
   await expect(page.locator(".title-description")).toContainText(
     "Framed in the 1940s",
@@ -273,4 +281,38 @@ test("all catalog records resolve to matching detail chunks without duplicates",
       throw Error(`Broken detail mapping: ${t.id}`);
   }
   expect(chunks.size).toBe(30);
+});
+
+test("preview closes with Escape, restores focus, and opens the watch page", async ({ page }) => {
+  await page.goto("/movies?genre=Sci-Fi");
+  const card = page.getByRole("link", { name: "View Dune: Part Two", exact: true });
+  await card.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.locator("iframe")).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(card).toBeFocused();
+  await expect(page).toHaveURL(/genre=Sci-Fi/);
+  await card.click();
+  await page.getByRole("dialog").getByRole("link", { name: "Watch now" }).click();
+  await expect(page).toHaveURL(/dune-part-two-693134\/watch$/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator("iframe")).toHaveAttribute("src", "https://vidlink.pro/movie/693134");
+  await page.getByRole("button", { name: "Fullscreen", exact: true }).click();
+  await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+});
+
+test("mobile preview fits the viewport and saves without starting playback", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/movies");
+  await page.getByRole("link", { name: "View Dune: Part Two", exact: true }).click();
+  const modal = page.getByRole("dialog");
+  await expect(modal).toBeVisible();
+  await modal.getByRole("button", { name: "My List", exact: true }).click();
+  await expect(modal.getByRole("button", { name: "In My List", exact: true })).toBeVisible();
+  await expect(page.locator("iframe")).toHaveCount(0);
+  expect(await modal.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await page.screenshot({ path: "test-results/vault-preview-mobile.png" });
+  await modal.getByRole("button", { name: "Close dialog" }).click();
+  await expect(modal).toHaveCount(0);
 });
