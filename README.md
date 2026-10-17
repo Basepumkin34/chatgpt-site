@@ -56,3 +56,5 @@ The app has no account backend or private video library. Movie streams are not b
 Browser tests exercise catalog size, pagination, clean title routes and refresh, searches beyond the curated titles, saved lists, provider URLs, TV controls, source settings, old-link migration, responsive layouts and runtime errors. Provider requests are intercepted with test HTML; these tests do not claim live streaming works. Tests use system Chromium locally when available and Playwright's installed Chromium in CI.
 
 Design references, MCP calls, visual checks, access limitations and UI rules are recorded in [design research](docs/design-update.md). TMDB is the primary image service; bundled fallback photography has source credits in [catalog sources](docs/catalog-sources.md). This independent project is not endorsed or certified by TMDB.
+
+The current shared UI foundations and screen behavior are documented in [the design system](docs/design-system.md). [AIDesigner setup and connection status](docs/aidesigner-setup.md) explains the local MCP configuration and the cloud network blocker.

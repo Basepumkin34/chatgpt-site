@@ -227,6 +227,13 @@ test("responsive photographic home and dedicated page render without runtime err
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await expect(page.locator(".vault-stats")).toContainText("10,006 movies");
+  await page.evaluate(async () => {
+    for (let position = 0; position < document.body.scrollHeight; position += 700) {
+      window.scrollTo(0, position);
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    }
+    window.scrollTo(0, 0);
+  });
   await page.screenshot({
     path: "test-results/vault-desktop.png",
     fullPage: true,
@@ -315,4 +322,34 @@ test("mobile preview fits the viewport and saves without starting playback", asy
   await page.screenshot({ path: "test-results/vault-preview-mobile.png" });
   await modal.getByRole("button", { name: "Close dialog" }).click();
   await expect(modal).toHaveCount(0);
+});
+
+test("discovery links, rail controls and clear filters make browsing reversible", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const rail = page.getByRole("region", { name: "Featured films titles", exact: true });
+  await expect(page.getByRole("button", { name: "Previous Featured films", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "Next Featured films", exact: true }).click();
+  await expect.poll(() => rail.evaluate((element) => element.scrollLeft)).toBeGreaterThan(100);
+  await expect(page.getByRole("button", { name: "Previous Featured films", exact: true })).toBeEnabled();
+  await page.getByRole("region", { name: "Browse by mood" }).getByRole("link", { name: "Thriller", exact: true }).click();
+  await expect(page.getByLabel("Filter by genre")).toHaveValue("Thriller");
+  await page.getByLabel("Sort titles").selectOption("rating");
+  await page.getByRole("button", { name: "Clear filters", exact: true }).click();
+  await expect(page.getByLabel("Filter by genre")).toHaveValue("All");
+  await expect(page.getByLabel("Sort titles")).toHaveValue("featured");
+  await expect(page.locator(".results-summary")).toContainText("10,006 titles");
+});
+
+test("catalog and player retain their layout from small phones to desktop", async ({ page }) => {
+  for (const width of [320, 390, 701, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ["/movies", "/tv/dark-70523/watch"]) {
+      await page.goto(path);
+      await expect(page.locator("h1")).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${path} at ${width}px`).toBe(true);
+      const header = await page.locator(".site-header").evaluate((element) => ({ width: element.clientWidth, content: element.scrollWidth }));
+      expect(header.content, `header at ${width}px`).toBeLessThanOrEqual(header.width);
+    }
+  }
 });

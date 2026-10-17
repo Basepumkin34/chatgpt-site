@@ -8,3 +8,4 @@ test-results/
 # Machine-local agent configuration and skill links
 .agents/
 .codex/
+.aidesigner/

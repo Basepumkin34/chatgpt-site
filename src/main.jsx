@@ -8,6 +8,7 @@ import "@fontsource/manrope/latin-800.css";
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
   createContext,
   useContext,
@@ -38,9 +39,8 @@ import {
   X,
   Clapperboard,
   Film,
+  Info,
   Star,
-  SlidersHorizontal,
-  RotateCcw,
 } from "lucide-react";
 import {
   seedTitles,
@@ -55,6 +55,7 @@ import Artwork from "./Artwork";
 import Player from "./Player";
 import Dialog from "./Dialog";
 import Settings from "./Settings";
+import "./tokens.css";
 import "./style.css";
 const VaultContext = createContext();
 const useVault = () => useContext(VaultContext);
@@ -268,7 +269,7 @@ function Card({ title, wide = false }) {
       >
         <Artwork title={title} kind={wide ? "backdrop" : "poster"} />
         <span className="card-hover">
-          <Play size={23} fill="currentColor" />
+          <Info size={20} /><span>Quick view</span>
         </span>
         {title.type === "TV Shows" && <span className="type-tag">SERIES</span>}
       </Link>
@@ -339,6 +340,24 @@ function TitlePreview({ summary, onClose }) {
   );
 }
 function Rail({ label, title, items, to, wide = false }) {
+  const rail = useRef(null);
+  const [edges, setEdges] = useState({ start: true, end: true });
+  useEffect(() => {
+    const element = rail.current;
+    const update = () => setEdges({
+      start: element.scrollLeft <= 8,
+      end: element.scrollLeft + element.clientWidth >= element.scrollWidth - 8,
+    });
+    update();
+    element.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => { element.removeEventListener("scroll", update); observer.disconnect(); };
+  }, [items.length]);
+  const scroll = (direction) => rail.current.scrollBy({
+    left: direction * rail.current.clientWidth * 0.85,
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+  });
   return (
     <section className="rail-section">
       <div className="section-top">
@@ -346,16 +365,16 @@ function Rail({ label, title, items, to, wide = false }) {
           {label && <p className="eyebrow">{label}</p>}
           <h2>{title}</h2>
         </div>
-        {to && (
-          <Link className="see-all" to={to}>
-            Explore all <ArrowUpRight size={15} />
-          </Link>
-        )}
+        <div className="rail-tools">
+          {to && <Link className="see-all" to={to}>Explore all <ArrowUpRight size={16} /></Link>}
+          <div className="rail-arrows">
+            <button className="icon-button" aria-label={`Previous ${title}`} disabled={edges.start} onClick={() => scroll(-1)}><ChevronLeft size={19} /></button>
+            <button className="icon-button" aria-label={`Next ${title}`} disabled={edges.end} onClick={() => scroll(1)}><ChevronRight size={19} /></button>
+          </div>
+        </div>
       </div>
-      <div className={`rail ${wide ? "landscape-rail" : ""}`}>
-        {items.map((t) => (
-          <Card key={t.id} title={t} wide={wide} />
-        ))}
+      <div ref={rail} className={`rail ${wide ? "landscape-rail" : ""}`} role="region" aria-label={`${title} titles`} tabIndex={0}>
+        {items.map((t) => <Card key={t.id} title={t} wide={wide} />)}
       </div>
     </section>
   );
@@ -367,7 +386,7 @@ function Home() {
     .map((id) => titles.find((t) => t.id === id))
     .filter(Boolean);
   const selected = choices[feature] || choices[0];
-  const { saved, toggle } = useVault();
+  const { saved, toggle, openPreview } = useVault();
   useEffect(() => {
     document.title = "Recepeit Vault — Movies & TV";
   }, []);
@@ -410,9 +429,9 @@ function Home() {
               <Play size={17} fill="currentColor" />
               Watch now
             </Link>
-            <Link className="button secondary" to={titlePath(selected)}>
-              More details <ChevronRight size={16} />
-            </Link>
+            <button className="button secondary" onClick={() => openPreview(selected)}>
+              <Info size={18} />Quick view
+            </button>
             <button
               className="round-button"
               aria-label={`${saved.includes(selected.id) ? "Remove" : "Save"} featured ${selected.name}`}
@@ -486,6 +505,14 @@ function Home() {
           <button onClick={refresh}>Try again</button>
         </div>
       )}
+      <section className="discovery-links" aria-label="Browse by mood">
+        <div><span className="eyebrow">MAKE IT A MOVIE NIGHT</span><h2>What are you in the mood for?</h2></div>
+        <div className="discovery-genres">
+          {["Sci-Fi", "Thriller", "Drama", "Comedy"].map((genre) => (
+            <Link key={genre} to={`/movies?genre=${encodeURIComponent(genre)}`}>{genre}<ArrowUpRight size={17} /></Link>
+          ))}
+        </div>
+      </section>
       {recentTitles.length > 0 && (
         <Rail
           label="RECENTLY OPENED"
@@ -497,8 +524,9 @@ function Home() {
       <Rail
         label="CURATED"
         title="Featured films"
-        items={titles.filter((t) => t.type === "Movies").slice(0, 10)}
+        items={choices}
         to="/movies"
+        wide
       />
       <Rail
         label="SELECTED SERIES"
@@ -681,11 +709,14 @@ function Library({ type, savedOnly = false, search = false }) {
           {genre !== "All" ? ` · ${genre}` : ""}
           {query ? ` for “${query}”` : ""}
         </span>
+        <div className="result-actions">
+          {(genre !== "All" || query || sort !== "featured") && <button className="clear-filters" onClick={() => setParams({})}><X size={14} />Clear filters</button>}
         <span>
           {loading
             ? "Loading the full archive…"
             : `Page ${current} of ${pages}`}
         </span>
+        </div>
       </div>
       {error && (
         <div className="inline-error" role="alert">
@@ -694,7 +725,7 @@ function Library({ type, savedOnly = false, search = false }) {
         </div>
       )}
       {visible.length ? (
-        <div className="catalog-grid">
+        <div className="catalog-grid" aria-busy={loading}>
           {visible.map((t) => (
             <Card key={t.id} title={t} />
           ))}
@@ -749,7 +780,6 @@ function TitlePage({ type, watch = false }) {
   const summary = titles.find((t) => t.tmdb === Number(id) && t.type === type);
   const [detail, setDetail] = useState(null),
     [error, setError] = useState("");
-  const location = useLocation();
   useEffect(() => {
     setDetail(null);
     setError("");

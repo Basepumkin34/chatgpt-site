@@ -1,0 +1,47 @@
+/* Recepeit Vault foundations: semantic roles shared by every screen. */
+:root {
+  color-scheme: dark;
+  --color-canvas: #101112;
+  --color-surface: #191b1d;
+  --color-raised: #232629;
+  --color-text: #f5f3ef;
+  --color-muted: #b0b3b6;
+  --color-subtle: #92979b;
+  --color-border: #34383c;
+  --color-accent: #ff8565;
+  --color-accent-soft: #ff856514;
+  --color-primary: #f5f3ef;
+  --color-on-primary: #141516;
+  --color-error: #ffb4a3;
+  --color-success: #b5dfc2;
+  --font-body: "DM Sans", sans-serif;
+  --font-heading: "Manrope", sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-section: clamp(1.5rem, 2.5vw, 2rem);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --control-height: 44px;
+  --page-gutter: clamp(20px, 4.5vw, 80px);
+  --content-width: 1600px;
+  --header-height: 80px;
+  --shadow-dialog: 0 24px 96px #0009;
+  --duration-fast: 160ms;
+  /* Aliases retained for inline component styles and legacy integrations. */
+  --accent: var(--color-accent);
+  --muted: var(--color-muted);
+  --line: var(--color-border);
+}

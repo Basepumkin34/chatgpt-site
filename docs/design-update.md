@@ -37,3 +37,7 @@ Only three playback servers are registered, in fixed order: Server 1 (VidLink, d
 Catalog image and title clicks now open a native modal quick view without losing search, filters, pagination or scroll. It includes photographic artwork, archival synopsis, metadata, save controls, a full-details link and an explicit Watch now action. Closing via Escape, close button or backdrop restores focus to the originating card. Modified clicks retain normal link behavior. No player is mounted until Watch now is chosen. The dedicated watch route starts with the title and a large player, and provides a browser fullscreen control with a fallback message when fullscreen is unavailable.
 
 The supplied Framer project was retried using the Playwright MCP browser: navigation failed with `net::ERR_TUNNEL_CONNECTION_FAILED`. This implementation follows the user's description of its catalog → preview → player flow; it is not a verified visual clone of the inaccessible project.
+
+## Shared design system pass
+
+The current implementation replaces the accumulated stylesheet overrides with a single component stylesheet and semantic foundations in `src/tokens.css`. It adds readable UI text, consistent controls, persistent navigation, genre entry points, desktop rail arrows and reversible filter clearing. The full brief, component rules, plugin availability, AIDesigner connection limits and verification scope are in `design-system.md`.
