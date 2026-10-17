@@ -1,45 +1,58 @@
-# FRAME
+# Recepeit Vault
 
-A cinema-inspired movie and TV site built with React and Vite. The site uses self-hosted fonts, TMDB poster/backdrop URLs, and local artwork fallbacks when an image cannot load.
+A photographic film and television catalog built with React, Vite and React Router. Artwork uses TMDB image paths, with bundled photographic fallbacks for six featured movies if the image service cannot load. Clicking a title opens its own named page, for example `/movies/dune-part-two-693134`.
 
-## Run
+## Run locally (Windows, macOS or Linux)
+
+Use Node.js 22 or newer (CI uses Node 24). In the downloaded or cloned project folder:
 
 ```sh
-npm ci --cache /tmp/npm-cache
-npm run dev -- --port 5173
+npm install
+npm run dev
+```
+
+Open the address printed by Vite. For reproducible installation, use `npm ci` instead of `npm install`.
+
+## Catalog
+
+The checked-in archive has 10,000 imported movie records and 5,000 imported television records. Merging the curated selection produces **15,007 unique titles: 10,006 movies and 5,001 series**. No API key is needed to browse or search these records.
+
+This is archival metadata, not a live 2026 release feed or a guarantee that a streaming source carries every title. Movie poster filenames are included in the source data. Many TV records lack artwork or per-season episode counts; the interface shows an honest missing-art state and manual episode selection for those records. Known curated series retain their real episode lists. The source datasets, filters and pinned revisions are documented in [catalog sources](docs/catalog-sources.md).
+
+Search and filtering operate across the full index. Only 48 titles render on each catalog page. Full descriptions are fetched in chunks when a title page opens. Saved titles and recently opened titles persist in browser storage, retaining existing users' lists.
+
+## Routes and production
+
+```sh
 npm run build
+npm run preview
 npm test
 ```
 
-Node 24 and npm 11 are available in this environment. Browser tests use system Chromium at `/usr/bin/chromium`.
+`npm run build` generates a static HTML entry point for every title and watch page, plus `/movies`, `/tv`, `/search`, `/my-list` and `/settings`. The result supports direct navigation and refresh on GitHub Pages without hash-based routing. Old curated hash links redirect to the new paths. This is client-rendered routing with per-page HTML titles, not server-rendered detail content.
 
-## Features
+The GitHub workflow tests and builds the site for the repository subpath `/chatgpt-site/`, then deploys to GitHub Pages. **Settings → Pages → Source must be GitHub Actions**. A failed Pages deployment does not mean the source code was not pushed. For another static host, build using its appropriate Vite base path and publish `dist`.
 
-- Sixteen curated real movie and TV titles with TMDB/IMDb identifiers, descriptions, directors, and a season/episode metadata snapshot.
-- Separate Home, Movies, TV Shows and My List routes (`#home`, `#movies`, `#tv-shows`, `#my-list`). Home links into the catalogs instead of repeating them. Category links support reload and browser history.
-- Featured-title navigation, title/director/genre search, independent genre filtering and release-year/alphabetical sorting.
-- Saved lists and recently opened titles persisted in browser storage. Data stays in the current browser; there is no account backend.
-- Bookmarkable detail links, accessible native dialogs, keyboard dismissal, focus restoration and mobile layouts.
-- Movie players, TV season/episode controls, source switching, reload and external-player fallback.
-- Six selectable providers: VidSrc, 2Embed, Videasy, PrimeSrc, CloudNestra and VidLink.
-- An advanced Playback settings panel for per-provider HTTPS movie and TV URL templates. Supported placeholders: `{id}` (TMDB), `{imdb}`, `{season}` and `{episode}`. Overrides persist in browser storage.
+## Optional TV artwork enrichment
 
-Four default provider URL templates are configured in `src/providers.js`. **Their current endpoint compatibility and actual media playback remain unverified**: provider documentation and player requests returned HTTP/proxy 403 from this cloud environment. PrimeSrc and CloudNestra have no default URL template; configure their documented embed URLs before using them. The UI offers another-source guidance when a source has no template. A loaded iframe does not establish successful playback or content availability. Third-party players may collect visitor information. Only configure sources for content you are authorized to access.
+To retrieve missing artwork and actual season/episode lists, add a TMDB read-access token as the repository's **Actions secret** named `TMDB_READ_TOKEN`. Enrichment is disabled by default, as requested. Normal pushes build the checked-in archive without remote metadata requests. To opt in later, manually run the GitHub workflow with its `enrich_artwork` option enabled. The token is never included in browser JavaScript or catalog JSON.
 
-The curated metadata is a static snapshot, not a current release, popularity, rating or streaming-availability feed. To expand it, edit `src/catalog.js` or add a licensed metadata API integration. Poster/backdrop image filenames are stored in `src/catalog.js` and use TMDB’s image CDN. These static image URLs do not require an API key. Live image URLs could not be verified because the cloud proxy blocks `image.tmdb.org`; failed images retain the original local illustrated fallback. The Planet Earth II poster is a local asset sourced from [this public poster example](https://github.com/waleedthedev/Planet-Earth-II), rather than TMDB. Title imagery remains the property of its respective rights holders. Trailer links open a YouTube search for the selected title’s official trailer. TMDB links provide further title information; FRAME is independent and is not endorsed by TMDB.
+For local enrichment, set the same variable in your shell or in an ignored `.env.local` file and run:
 
-## Validation
+```sh
+npm run catalog:enrich
+```
 
-Playwright covers catalog filtering/sorting, list persistence, movie deep links, provider switching, missing-source states, HTTPS template validation and persistence, TV season/episode URL generation, Escape dismissal, TMDB image loading/error fallback, category history, absence of the iframe sandbox attribute, and responsive layouts. Provider network calls are intercepted with controlled test HTML; tests do not claim live third-party streaming works.
+The importer uses four concurrent verified HTTPS requests, stops on authentication/network failures, and writes only public metadata. Missing art may remain if TMDB has no image. Live enrichment is **not verified** in this cloud instance: no token is available and the proxy blocks the TMDB hosts.
 
-Optional tooling installed separately during setup is described in [toolkit installation status](docs/toolkit-installation.md). No external MCP or API key is needed to build or browse FRAME.
+## Playback
 
-## Production deployment
+Three configurable playback options appear as **Server 1** (VidLink, the default), **Server 2** (Videasy), and **Server 3** (VidSrc). Removed sources are no longer registered. Playback pages have a provider selector, TV season/episode controls, reload and an external-player link. The iframe intentionally has no sandbox attribute, as requested. A listed title or loaded iframe does not establish stream availability. Only use content and sources you are authorized to access.
 
-The GitHub Actions workflow in `.github/workflows/deploy.yml` runs browser tests, builds with the repository-specific base path, and deploys the `dist` artifact to GitHub Pages whenever `main` changes.
+The app has no account backend or private video library. Movie streams are not bundled. Trailer links search YouTube for the official trailer. Actual provider playback remains unverified because the cloud proxy blocks provider hosts.
 
-In the repository’s **Settings → Pages**, set **Source** to **GitHub Actions**. If Pages is not enabled, the deployment job cannot publish until that setting is saved. The expected default address is `https://basepumkin34.github.io/chatgpt-site/`; this address is only live after a successful Pages deployment. Custom domains require a separate base-path configuration.
+## Validation and design
 
-For another static hosting service, use build command `npm run build` and publish directory `dist`. Hash-based title links work without server rewrite rules. The app has no private server credentials or account backend.
+Browser tests exercise catalog size, pagination, clean title routes and refresh, searches beyond the curated titles, saved lists, provider URLs, TV controls, source settings, old-link migration, responsive layouts and runtime errors. Provider requests are intercepted with test HTML; these tests do not claim live streaming works. Tests use system Chromium locally when available and Playwright's installed Chromium in CI.
 
-The player iframe intentionally has no `sandbox` attribute, as requested. Browser autoplay policy and the provider’s own restrictions still apply.
+Design references, MCP calls, visual checks, access limitations and UI rules are recorded in [design research](docs/design-update.md). TMDB is the primary image service; bundled fallback photography has source credits in [catalog sources](docs/catalog-sources.md). This independent project is not endorsed or certified by TMDB.

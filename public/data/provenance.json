@@ -1,0 +1,10 @@
+{
+  "movies": {
+    "repository": "https://github.com/kaushikjadhav01/Movie-Recommendation-Chatbot",
+    "commit": "2974c9c5b583edb27e1b9c2d7de2ff94d100115b"
+  },
+  "tv": {
+    "repository": "https://github.com/Asafhenig1/DS17_TMDB_Project",
+    "commit": "7d6187a3c99a3012307779dddc7e047808c1176c"
+  }
+}

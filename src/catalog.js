@@ -1,248 +1,105 @@
-// Curated metadata snapshot, not a live popularity or availability feed.
-const film = (
-  id,
-  imdb,
-  name,
-  year,
-  genre,
-  minutes,
-  director,
-  description,
-  art,
-) => ({
-  id: `movie-${id}`,
-  tmdb: id,
-  imdb,
-  name,
-  type: "Movies",
-  year,
-  genre,
-  length: `${Math.floor(minutes / 60)}h ${minutes % 60}m`,
-  director,
-  description,
-  art,
-});
-const show = (id, imdb, name, year, genre, seasons, description, art) => ({
-  id: `tv-${id}`,
-  tmdb: id,
-  imdb,
-  name,
-  type: "TV Shows",
-  year,
-  genre,
-  length: `${seasons.length} season${seasons.length === 1 ? "" : "s"}`,
-  seasons,
-  description,
-  art,
-});
-export const titles = [
-  film(
-    693134,
-    "tt15239678",
-    "Dune: Part Two",
-    2024,
-    "Sci-Fi",
-    167,
-    "Denis Villeneuve",
-    "Paul Atreides joins Chani and the Fremen on a path of revenge, facing a choice between the people he loves and the fate of the universe.",
-    "dune",
-  ),
-  film(
-    157336,
-    "tt0816692",
-    "Interstellar",
-    2014,
-    "Sci-Fi",
-    169,
-    "Christopher Nolan",
-    "A team of explorers travels beyond our galaxy to discover whether humanity has a future among the stars.",
-    "interstellar",
-  ),
-  show(
-    70523,
-    "tt5753856",
-    "Dark",
-    2017,
-    "Mystery",
-    [10, 8, 8],
-    "A missing child exposes the secrets of four families, revealing a mystery that reaches far beyond the small German town they call home.",
-    "dark",
-  ),
-  film(
-    27205,
-    "tt1375666",
-    "Inception",
-    2010,
-    "Thriller",
-    148,
-    "Christopher Nolan",
-    "A specialist in stealing secrets from dreams is offered one final job: plant an idea instead of taking one.",
-    "inception",
-  ),
-  film(
-    335984,
-    "tt1856101",
-    "Blade Runner 2049",
-    2017,
-    "Sci-Fi",
-    164,
-    "Denis Villeneuve",
-    "A young blade runner uncovers a secret that sends him in search of a former officer who has been missing for decades.",
-    "blade-runner",
-  ),
-  show(
-    1396,
-    "tt0903747",
-    "Breaking Bad",
-    2008,
-    "Drama",
-    [7, 13, 13, 13, 16],
-    "A chemistry teacher facing a terminal diagnosis enters the criminal underworld, transforming his family’s life and his own identity.",
-    "breaking-bad",
-  ),
-  film(
-    872585,
-    "tt15398776",
-    "Oppenheimer",
-    2023,
-    "Drama",
-    180,
-    "Christopher Nolan",
-    "Physicist J. Robert Oppenheimer leads the Manhattan Project and confronts the consequences of a world-changing scientific achievement.",
-    "oppenheimer",
-  ),
-  film(
-    329865,
-    "tt2543164",
-    "Arrival",
-    2016,
-    "Sci-Fi",
-    116,
-    "Denis Villeneuve",
-    "When mysterious spacecraft arrive on Earth, a linguist must find a way to communicate before fear turns into global conflict.",
-    "arrival",
-  ),
-  show(
-    87108,
-    "tt7366338",
-    "Chernobyl",
-    2019,
-    "Drama",
-    [5],
-    "In the aftermath of the 1986 nuclear disaster, scientists and workers risk everything to contain the damage and uncover the truth.",
-    "chernobyl",
-  ),
-  film(
-    244786,
-    "tt2582802",
-    "Whiplash",
-    2014,
-    "Drama",
-    107,
-    "Damien Chazelle",
-    "An ambitious jazz drummer studies under a demanding instructor whose methods push the limits of talent and obsession.",
-    "whiplash",
-  ),
-  film(
-    120467,
-    "tt2278388",
-    "The Grand Budapest Hotel",
-    2014,
-    "Comedy",
-    100,
-    "Wes Anderson",
-    "A legendary concierge and his young lobby boy become entangled in a stolen painting, a family fortune, and a changing Europe.",
-    "budapest",
-  ),
-  film(
-    324857,
-    "tt4633694",
-    "Spider-Man: Into the Spider-Verse",
-    2018,
-    "Animation",
-    117,
-    "Bob Persichetti, Peter Ramsey & Rodney Rothman",
-    "Teenager Miles Morales discovers that anyone can wear the mask when he meets Spider-People from across the multiverse.",
-    "spiderverse",
-  ),
-  show(
-    68595,
-    "tt5491994",
-    "Planet Earth II",
-    2016,
-    "Documentary",
-    [6],
-    "Travel from remote islands to crowded cities to discover the remarkable ways wildlife adapts to the challenges of our planet.",
-    "planet-earth",
-  ),
-  film(
-    414906,
-    "tt1877830",
-    "The Batman",
-    2022,
-    "Thriller",
-    177,
-    "Matt Reeves",
-    "A masked detective follows a trail of cryptic clues through Gotham’s criminal underworld, uncovering corruption connected to his own family.",
-    "batman",
-  ),
-  film(
-    1124,
-    "tt0482571",
-    "The Prestige",
-    2006,
-    "Mystery",
-    130,
-    "Christopher Nolan",
-    "Two rival magicians become locked in a dangerous contest to create the perfect illusion.",
-    "prestige",
-  ),
-  film(
-    496243,
-    "tt6751668",
-    "Parasite",
-    2019,
-    "Thriller",
-    132,
-    "Bong Joon Ho",
-    "A struggling family finds an unexpected way into the lives of a wealthy household, setting off a chain of increasingly unpredictable events.",
-    "parasite",
-  ),
+import {
+  titles as curatedTitles,
+  imageUrl as curatedImage,
+} from "./curated.js";
+export const seedTitles = curatedTitles.map((t) => ({
+  ...t,
+  genres: [t.genre],
+  slug: slugify(t.name) + "-" + t.tmdb,
+}));
+export const featureIds = [
+  "movie-693134",
+  "movie-872585",
+  "movie-335984",
+  "movie-157336",
+  "movie-27205",
+  "movie-414906",
 ];
-export const featured = [titles[0], titles[1], titles[4], titles[2]];
-export const genres = ["All genres", ...new Set(titles.map((t) => t.genre))];
-export const artUrl = (title) =>
-  `${import.meta.env.BASE_URL}art/${title.art}.svg`;
-
-// TMDB image filenames are kept separate from title IDs: the image service
-// requires image paths, not a movie or series ID. Failed images use local art.
-const images = {
-  dune: ["1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", "xOMo8BRK7PfcJvN5uULul7OGRej.jpg"],
-  interstellar: [
-    "gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
-    "xJHokMbljvjADYdit5fK5VQsX9v.jpg",
-  ],
-  dark: ["apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg", "75HgaphatW0PDI3XIHQWZUpbhn6.jpg"],
-  inception: ["oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"],
-  "blade-runner": [
-    "gajva2L0rPYkEWjzgFlBXCAVBE5.jpg",
-    "ilRyazdMJwN05exqhwK4tJtH9y8.jpg",
-  ],
-  "breaking-bad": ["3xnWaLQjelJDDF7LT1WBo6f4BRe.jpg"],
-  oppenheimer: ["ptpr0kGAckfQkJeJIt8st5dglvd.jpg"],
-  arrival: ["x2FJsf1ElAgr63Y3PNPtJrcmpoe.jpg"],
-  chernobyl: ["hlLXt2tOPT6RRnjiUmoxyG1LTFi.jpg"],
-  whiplash: ["7fn624j5lj3xTme2SgiLCeuedmO.jpg"],
-  budapest: ["eWdyYQreja6JGCzqHWXpWHDrrPo.jpg"],
-  spiderverse: ["iiZZdoQBEYBv6id8su7ImL0oCbD.jpg"],
-  batman: ["74xTEgt7R36Fpooo50r9T25onhq.jpg"],
-  prestige: ["bdN3gXuIZYaJP7ftKK2sU0nPtEA.jpg"],
-  parasite: ["7IiTTgloJzvGI1TAYymCfbfl3vT.jpg"],
+export const localStills = {
+  "movie-693134": "dune.jpg",
+  "movie-872585": "oppenheimer.jpg",
+  "movie-335984": "blade-runner-full.png",
+  "movie-157336": "interstellar.jpg",
+  "movie-27205": "inception.jpg",
+  "movie-414906": "batman.png",
 };
-export function imageUrl(title, kind = "poster") {
-  if (title.art === "planet-earth")
-    return `${import.meta.env.BASE_URL}posters/planet-earth-ii.avif`;
-  const paths = images[title.art];
-  if (!paths) return "";
-  return `https://image.tmdb.org/t/p/${kind === "poster" ? "w500" : "w1280"}/${kind === "poster" ? paths[0] : paths[1] || paths[0]}`;
+export function slugify(name) {
+  return (
+    name
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "title"
+  );
+}
+export function titlePath(t) {
+  return `/${t.type === "Movies" ? "movies" : "tv"}/${t.slug || slugify(t.name) + "-" + t.tmdb}`;
+}
+export function photoUrl(t, kind = "poster") {
+  if (t.poster)
+    return `https://image.tmdb.org/t/p/${kind === "poster" ? "w500" : "w1280"}${t.backdrop && kind === "backdrop" ? t.backdrop : t.poster}`;
+  if (t.art) {
+    const image = curatedImage(t, kind);
+    if (image.startsWith("https://image.tmdb.org/")) return image;
+  }
+  return "";
+}
+export function fallbackPhotoUrl(t) {
+  return localStills[t.id]
+    ? `${import.meta.env.BASE_URL}stills/${localStills[t.id]}`
+    : "";
+}
+let indexPromise;
+export function loadCatalog() {
+  if (!indexPromise)
+    indexPromise = fetch(`${import.meta.env.BASE_URL}data/catalog-index.json`)
+      .then((r) => {
+        if (!r.ok) throw Error("The catalog could not be loaded.");
+        return r.json();
+      })
+      .then((data) => {
+        const merged = new Map(data.titles.map((t) => [t.id, t]));
+        for (const seed of seedTitles)
+          merged.set(seed.id, { ...merged.get(seed.id), ...seed });
+        const titles = [
+          ...seedTitles.map((s) => merged.get(s.id)),
+          ...[...merged.values()].filter(
+            (t) => !seedTitles.some((s) => s.id === t.id),
+          ),
+        ];
+        return {
+          titles,
+          counts: {
+            movies: titles.filter((t) => t.type === "Movies").length,
+            tv: titles.filter((t) => t.type === "TV Shows").length,
+            total: titles.length,
+          },
+        };
+      })
+      .catch((e) => {
+        indexPromise = undefined;
+        throw e;
+      });
+  return indexPromise;
+}
+const chunks = new Map();
+export function loadTitle(t) {
+  if (t.description || !t.chunk) return Promise.resolve(t);
+  if (!chunks.has(t.chunk))
+    chunks.set(
+      t.chunk,
+      fetch(`${import.meta.env.BASE_URL}data/${t.chunk}`)
+        .then((r) => {
+          if (!r.ok) throw Error("Title details could not be loaded.");
+          return r.json();
+        })
+        .catch((e) => {
+          chunks.delete(t.chunk);
+          throw e;
+        }),
+    );
+  return chunks
+    .get(t.chunk)
+    .then((rows) => ({ ...t, ...rows.find((row) => row.id === t.id) }));
 }

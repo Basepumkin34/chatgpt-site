@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Check, RotateCcw, ExternalLink } from "lucide-react";
 import { providers, mergeProviders, resolveEmbed } from "./providers";
-import { titles } from "./catalog";
+import { seedTitles as titles } from "./catalog";
 export default function Settings({ overrides, onSave }) {
   const [draft, setDraft] = useState(() =>
       Object.fromEntries(
@@ -36,7 +36,7 @@ export default function Settings({ overrides, onSave }) {
   }
   return (
     <form className="settings-content" onSubmit={submit}>
-      <p className="eyebrow">MAKE YOURSELF AT HOME</p>
+      <p className="eyebrow">PLAYER SOURCES</p>
       <h2>Playback settings</h2>
       <p className="settings-intro">
         Configure your preferred player sources. Changes are saved in this
@@ -48,8 +48,7 @@ export default function Settings({ overrides, onSave }) {
           Use the provider’s documented HTTPS embed URL. Supported placeholders:{" "}
           <code>{"{id}"}</code> (TMDB), <code>{"{imdb}"}</code>,{" "}
           <code>{"{season}"}</code>, and <code>{"{episode}"}</code>. Only use
-          content you’re authorized to access. PrimeSrc and CloudNestra require
-          a template from their documentation. Default endpoints have not been
+          content you’re authorized to access. Default endpoints have not been
           verified from this environment.
         </p>
       </details>

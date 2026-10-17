@@ -1,28 +1,31 @@
-import React from "react";
-import { artUrl, imageUrl } from "./catalog";
+import React, { useState } from "react";
+import { Film } from "lucide-react";
+import { photoUrl, fallbackPhotoUrl } from "./catalog";
 export default function Artwork({ title, kind = "poster", priority = false }) {
-  const src = imageUrl(title, kind);
+  const primary = photoUrl(title, kind);
+  const fallback = fallbackPhotoUrl(title);
+  const [failed, setFailed] = useState([]);
+  const src = [primary, fallback].find((url) => url && !failed.includes(url));
+  const available = Boolean(src);
   return (
     <span
-      className={`artwork artwork-${kind}`}
-      style={{ backgroundImage: `url(${artUrl(title)})` }}
+      className={`artwork artwork-${kind} ${available ? "" : "unavailable"}`}
     >
-      {src && (
+      {available ? (
         <img
           key={src}
-          className="tmdb-image"
           src={src}
           alt=""
           aria-hidden="true"
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : undefined}
-          onLoad={(e) => {
-            e.currentTarget.dataset.loaded = "true";
-          }}
-          onError={(e) => {
-            e.currentTarget.hidden = true;
-          }}
+          onError={() => setFailed((urls) => [...urls, src])}
         />
+      ) : (
+        <span className="missing-art">
+          <Film size={26} />
+          <span>{title.name}</span>
+        </span>
       )}
     </span>
   );

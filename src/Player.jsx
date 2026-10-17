@@ -30,10 +30,13 @@ export default function Player({ title, providers, onOpened }) {
     if (url) onOpened(title.id);
   }, [url, retry]);
   const isTV = title.type === "TV Shows";
-  const episodes = isTV ? title.seasons[season - 1] : 0;
+  const seasons =
+    title.seasons ||
+    Array.from({ length: Math.min(100, title.seasonCount || 1) }, () => null);
+  const episodes = isTV ? seasons[season - 1] : 0;
   function next() {
-    if (episode < episodes) setEpisode(episode + 1);
-    else if (season < title.seasons.length) {
+    if (!episodes || episode < episodes) setEpisode(episode + 1);
+    else if (season < seasons.length) {
       setSeason(season + 1);
       setEpisode(1);
     }
@@ -110,7 +113,7 @@ export default function Player({ title, providers, onOpened }) {
                   setEpisode(1);
                 }}
               >
-                {title.seasons.map((_, i) => (
+                {seasons.map((_, i) => (
                   <option key={i} value={i + 1}>
                     Season {i + 1}
                   </option>
@@ -118,7 +121,8 @@ export default function Player({ title, providers, onOpened }) {
               </select>
             </label>
             <span>
-              Episode {episode} of {episodes}
+              Episode {episode}
+              {episodes ? ` of ${episodes}` : ""}
             </span>
             <div className="episode-arrows">
               <button
@@ -131,9 +135,7 @@ export default function Player({ title, providers, onOpened }) {
               </button>
               <button
                 className="icon-button"
-                disabled={
-                  episode === episodes && season === title.seasons.length
-                }
+                disabled={episode === episodes && season === seasons.length}
                 aria-label="Next episode"
                 onClick={next}
               >
@@ -141,8 +143,31 @@ export default function Player({ title, providers, onOpened }) {
               </button>
             </div>
           </div>
+          {!episodes && (
+            <>
+              <label className="episode-heading">
+                Episode{" "}
+                <input
+                  aria-label="Episode number"
+                  type="number"
+                  min="1"
+                  max="9999"
+                  value={episode}
+                  onChange={(e) =>
+                    setEpisode(
+                      Math.min(9999, Math.max(1, Number(e.target.value) || 1)),
+                    )
+                  }
+                />
+              </label>
+              <p className="episode-note">
+                Episode lists aren’t included in this archive record. Choose the
+                season and enter the episode number.
+              </p>
+            </>
+          )}
           <div className="episode-grid">
-            {Array.from({ length: episodes }, (_, i) => (
+            {Array.from({ length: episodes || 0 }, (_, i) => (
               <button
                 key={i}
                 className={episode === i + 1 ? "selected" : ""}

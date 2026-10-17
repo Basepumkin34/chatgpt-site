@@ -1,9 +1,15 @@
-name: Test and deploy FRAME
+name: Test and deploy Recepeit Vault
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      enrich_artwork:
+        description: Enrich missing TV artwork using the TMDB secret
+        type: boolean
+        default: false
+        required: false
 
 permissions:
   contents: read
@@ -23,6 +29,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Optional manual TV artwork enrichment
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.enrich_artwork }}
+        run: node scripts/enrich-catalog.mjs
+        env:
+          TMDB_READ_TOKEN: ${{ secrets.TMDB_READ_TOKEN }}
       - run: npm test
       - name: Build for the repository Pages URL
         run: npm run build -- --base="/${GITHUB_REPOSITORY#*/}/"
