@@ -159,7 +159,6 @@ img { max-width: 100%; }
 .detail-facts p { margin-top: 8px; font-size: var(--text-sm); }
 .detail-facts a { display: inline-flex; align-items: center; gap: 8px; }
 .modal { width: min(820px, calc(100vw - 40px)); max-width: none; max-height: calc(100dvh - 48px); padding: 0; color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-dialog); overflow: auto; }
-.modal::backdrop { background: #050608bd; backdrop-filter: blur(8px); }
 .modal .close { position: absolute; z-index: 3; top: 16px; right: 16px; width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid #ffffff50; border-radius: var(--radius-pill); background: #111d; color: white; }
 .preview-image { position: relative; aspect-ratio: 16/8; overflow: hidden; margin-bottom: 16px; }
 .preview-image-shade { position: absolute; inset: 0; background: linear-gradient(0deg,var(--color-surface),transparent 70%); }

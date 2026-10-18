@@ -7,6 +7,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { resolveEmbed } from "./providers";
+import { Button } from "./components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "./components/ui/toggle-group";
 export default function Player({ title, providers, onOpened }) {
   const [source, setSource] = useState(
     () =>
@@ -75,21 +77,28 @@ export default function Player({ title, providers, onOpened }) {
           <span className="eyebrow muted">CHOOSE YOUR SOURCE</span>
           <p>Player not loading? Try another source.</p>
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="icon"
           className="icon-button"
           aria-label="Reload player"
           onClick={() => setRetry(retry + 1)}
         >
           <RefreshCw size={17} />
-        </button>
+        </Button>
       </div>
-      <div className="source-tabs" aria-label="Playback source">
+      <ToggleGroup
+        type="single"
+        value={source}
+        onValueChange={(value) => { if (value) setSource(value); }}
+        className="source-tabs"
+        aria-label="Playback source"
+      >
         {providers.map((p) => (
-          <button
-            aria-pressed={source === p.id}
+          <ToggleGroupItem
+            value={p.id}
             className={source === p.id ? "selected" : ""}
             key={p.id}
-            onClick={() => setSource(p.id)}
           >
             <span
               className={
@@ -97,9 +106,9 @@ export default function Player({ title, providers, onOpened }) {
               }
             />
             {p.name}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
       {isTV && (
         <div className="episodes">
           <div className="episode-heading">
@@ -125,22 +134,26 @@ export default function Player({ title, providers, onOpened }) {
               {episodes ? ` of ${episodes}` : ""}
             </span>
             <div className="episode-arrows">
-              <button
+              <Button
+                variant="outline"
+                size="icon"
                 className="icon-button"
                 disabled={episode === 1}
                 aria-label="Previous episode"
                 onClick={() => setEpisode(episode - 1)}
               >
                 <ChevronLeft size={18} />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
                 className="icon-button"
                 disabled={episode === episodes && season === seasons.length}
                 aria-label="Next episode"
                 onClick={next}
               >
                 <ChevronRight size={18} />
-              </button>
+              </Button>
             </div>
           </div>
           {!episodes && (

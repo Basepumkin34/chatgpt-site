@@ -151,17 +151,33 @@ test("movie watch page switches sources without an iframe sandbox", async ({
     "https://vidlink.pro/movie/693134",
   );
   await expect(page.locator("iframe")).not.toHaveAttribute("sandbox");
+  await expect(page.locator("iframe")).toHaveAttribute("allowfullscreen", "");
   await expect(page.locator(".source-tabs button")).toHaveText([
     "Server 1", "Server 2", "Server 3",
   ]);
-  await page.getByRole("button", { name: "Server 2", exact: true }).click();
+  await page.getByRole("radio", { name: "Server 2", exact: true }).click();
   await expect(page.locator("iframe")).toHaveAttribute(
     "src", "https://player.videasy.net/movie/693134",
   );
-  await page.getByRole("button", { name: "Server 3", exact: true }).click();
+  await page.getByRole("radio", { name: "Server 3", exact: true }).click();
   await expect(page.locator("iframe")).toHaveAttribute(
     "src", "https://vidsrc.sh/embed/movie/693134",
   );
+  const firstSource = page.getByRole("radio", { name: "Server 1", exact: true });
+  await page.keyboard.press("Home");
+  await expect(firstSource).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(firstSource).toBeChecked();
+  await expect(page.locator("iframe")).toHaveAttribute("src", "https://vidlink.pro/movie/693134");
+  // Pressing the selected source must not leave the player without a source.
+  await page.keyboard.press("Space");
+  await expect(firstSource).toBeChecked();
+  await page.keyboard.press("ArrowRight");
+  const secondSource = page.getByRole("radio", { name: "Server 2", exact: true });
+  await expect(secondSource).toBeFocused();
+  await page.keyboard.press("Space");
+  await expect(secondSource).toBeChecked();
+  await expect(page.locator("iframe")).toHaveAttribute("src", "https://player.videasy.net/movie/693134");
 });
 test("curated TV episode lists and archival manual episode selection both work", async ({
   page,
@@ -296,6 +312,12 @@ test("preview closes with Escape, restores focus, and opens the watch page", asy
   await card.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.locator("iframe")).toHaveCount(0);
+  const close = page.getByRole("button", { name: "Close dialog" });
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("dialog").getByRole("link", { name: "Full details" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(card).toBeFocused();

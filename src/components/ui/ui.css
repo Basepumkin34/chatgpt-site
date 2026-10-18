@@ -1,0 +1,22 @@
+/* shadcn recipes mapped to the existing Vault theme; no global reset. */
+.ui-button {
+  display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center;
+  gap: var(--space-2); min-height: var(--control-height); border: 1px solid transparent;
+  border-radius: var(--radius-sm); padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm); font-weight: 600; line-height: 1.2;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.ui-button-icon { width: var(--control-height); padding: var(--space-3); }
+.ui-button-ghost { background: transparent; color: var(--color-muted); }
+.ui-button-ghost:hover { background: var(--color-raised); color: var(--color-text); }
+.ui-button-link { background: transparent; color: var(--color-accent); }
+.ui-button-link:hover { text-decoration: underline; text-underline-offset: var(--space-1); }
+.ui-button svg { flex-shrink: 0; pointer-events: none; }
+.ui-input { min-width: 0; font: inherit; transition: border-color var(--duration-fast); }
+.ui-input:disabled { opacity: .5; cursor: not-allowed; }
+.ui-input[aria-invalid="true"] { border-color: var(--color-error); }
+.ui-dialog-overlay { position: fixed; inset: 0; z-index: 60; background: #050608bd; backdrop-filter: blur(8px); }
+.ui-dialog-content { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 61; outline: none; }
+.ui-toggle-group { display: flex; align-items: center; gap: var(--space-3); }
+.ui-toggle { min-height: var(--control-height); font-size: var(--text-sm); }
+.source-tabs button[data-state="on"] { color: var(--color-accent); background: var(--color-accent-soft); border-color: var(--color-primary-border); }

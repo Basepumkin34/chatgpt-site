@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Check, RotateCcw, ExternalLink } from "lucide-react";
 import { providers, mergeProviders, resolveEmbed } from "./providers";
 import { seedTitles as titles } from "./catalog";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 export default function Settings({ overrides, onSave }) {
   const [draft, setDraft] = useState(() =>
       Object.fromEntries(
@@ -67,7 +69,7 @@ export default function Settings({ overrides, onSave }) {
           </legend>
           <label>
             Movie URL
-            <input
+            <Input
               aria-label={`${p.name} movie URL`}
               type="text"
               value={draft[p.id].movie}
@@ -77,7 +79,7 @@ export default function Settings({ overrides, onSave }) {
           </label>
           <label>
             TV URL
-            <input
+            <Input
               aria-label={`${p.name} TV URL`}
               type="text"
               value={draft[p.id].tv}
@@ -93,11 +95,12 @@ export default function Settings({ overrides, onSave }) {
         </p>
       )}
       <div className="settings-actions">
-        <button className="primary" type="submit">
+        <Button className="primary" type="submit">
           <Check size={17} />
           Save settings
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           className="secondary"
           type="button"
           onClick={() => {
@@ -111,7 +114,7 @@ export default function Settings({ overrides, onSave }) {
         >
           <RotateCcw size={15} />
           Reset defaults
-        </button>
+        </Button>
       </div>
       {saved && (
         <p className="success" role="status">

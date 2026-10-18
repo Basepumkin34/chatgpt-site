@@ -57,4 +57,4 @@ Browser tests exercise catalog size, pagination, clean title routes and refresh,
 
 Design references, MCP calls, visual checks, access limitations and UI rules are recorded in [design research](docs/design-update.md). TMDB is the primary image service; bundled fallback photography has source credits in [catalog sources](docs/catalog-sources.md). This independent project is not endorsed or certified by TMDB.
 
-The current shared UI foundations and screen behavior are documented in [the design system](docs/design-system.md). [AIDesigner setup and connection status](docs/aidesigner-setup.md) explains the local MCP configuration and the cloud network blocker.
+The current shared UI foundations and screen behavior are documented in [the design system](docs/design-system.md). [UI components](docs/ui-components.md) documents the shadcn source adaptations, their Radix behavior and the current 21st connection requirement. AIDesigner is no longer part of the active design workflow.

@@ -53,7 +53,10 @@ import Artwork from "./Artwork";
 import Player from "./Player";
 import Dialog from "./Dialog";
 import Settings from "./Settings";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
 import "./tokens.css";
+import "./components/ui/ui.css";
 import "./style.css";
 const VaultContext = createContext();
 const useVault = () => useContext(VaultContext);
@@ -164,7 +167,7 @@ function Shell() {
           }}
         >
           <Search size={17} />
-          <input
+          <Input
             aria-label="Search the vault"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -318,10 +321,10 @@ function TitlePreview({ summary, onClose }) {
         </div>
         <p className="preview-description" aria-live="polite">{title.description || error || (detail ? "Explore this title in the vault." : "Loading the synopsis…")}</p>
         <div className="actions">
-          <Link className="button primary" to={`${titlePath(title)}/watch`}><Play size={18} fill="currentColor" />Watch now</Link>
-          <button className="button secondary" onClick={() => toggle(title)} aria-pressed={saved.includes(title.id)}>
+          <Button asChild variant="default" className="button primary"><Link to={`${titlePath(title)}/watch`}><Play size={18} fill="currentColor" />Watch now</Link></Button>
+          <Button variant="secondary" className="button secondary" onClick={() => toggle(title)} aria-pressed={saved.includes(title.id)}>
             {saved.includes(title.id) ? <Check size={18} /> : <Plus size={18} />}{saved.includes(title.id) ? "In My List" : "My List"}
-          </button>
+          </Button>
           <Link className="preview-details" to={titlePath(title)}>Full details<ArrowUpRight size={16} /></Link>
         </div>
         <p className="preview-genres">{(title.genres || [title.genre]).join(" / ")}</p>
@@ -399,16 +402,15 @@ function Home() {
           </div>
           <p className="feature-description">{selected.description}</p>
           <div className="actions">
-            <Link
-              className="button primary"
+            <Button asChild variant="default" className="button primary"><Link
               to={`${titlePath(selected)}/watch`}
             >
               <Play size={17} fill="currentColor" />
               Watch now
-            </Link>
-            <button className="button secondary" onClick={() => openPreview(selected)}>
+            </Link></Button>
+            <Button variant="secondary" className="button secondary" onClick={() => openPreview(selected)}>
               <Info size={18} />Quick view
-            </button>
+            </Button>
             <button
               className="round-button"
               aria-pressed={saved.includes(selected.id)}
@@ -597,14 +599,14 @@ function Library({ type, savedOnly = false, search = false }) {
           }}
         >
           <Search size={20} />
-          <input
+          <Input
             name="query"
             aria-label="Search titles"
             placeholder="A title, a director, a favorite…"
             defaultValue={query}
             key={query}
           />
-          <button className="button primary">Search</button>
+          <Button variant="default" className="button primary">Search</Button>
         </form>
       )}
       <div className="library-toolbar">
@@ -688,9 +690,9 @@ function Library({ type, savedOnly = false, search = false }) {
               ? "Save a film or series using the + button."
               : "Try a different search or clear your filters."}
           </p>
-          <Link className="button secondary" to="/movies">
+          <Button asChild variant="secondary" className="button secondary"><Link to="/movies">
             Explore movies <ChevronRight size={16} />
-          </Link>
+          </Link></Button>
         </div>
       )}
       {pages > 1 && (
@@ -807,24 +809,24 @@ function TitlePage({ type, watch = false }) {
           )}
           <div className="actions">
             {watch ? (
-              <Link className="button secondary" to={titlePath(title)}>
+              <Button asChild variant="secondary" className="button secondary"><Link to={titlePath(title)}>
                 <ArrowLeft size={15} />
                 Title details
-              </Link>
+              </Link></Button>
             ) : (
-              <Link className="button primary" to={`${titlePath(title)}/watch`}>
+              <Button asChild variant="default" className="button primary"><Link to={`${titlePath(title)}/watch`}>
                 <Play size={17} fill="currentColor" />
                 Watch now
-              </Link>
+              </Link></Button>
             )}
-            <button className="button secondary" onClick={() => toggle(title)}>
+            <Button variant="secondary" className="button secondary" onClick={() => toggle(title)}>
               {saved.includes(title.id) ? (
                 <Check size={17} />
               ) : (
                 <Plus size={17} />
               )}{" "}
               {saved.includes(title.id) ? "In My List" : "My List"}
-            </button>
+            </Button>
             <a
               className="trailer-link"
               href={`https://www.youtube.com/results?search_query=${encodeURIComponent(title.name + " official trailer")}`}
@@ -895,10 +897,10 @@ function NotFound() {
       <p className="eyebrow">NOT IN THIS VAULT</p>
       <h1>That title got away.</h1>
       <p>Try another title, or explore the full collection.</p>
-      <Link className="button primary" to="/movies">
+      <Button asChild variant="default" className="button primary"><Link to="/movies">
         Explore movies
         <ChevronRight size={16} />
-      </Link>
+      </Link></Button>
     </div>
   );
 }
