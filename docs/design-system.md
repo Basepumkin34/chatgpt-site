@@ -46,15 +46,15 @@ Measured contrast on the solid surface is 14.55:1 for primary text, 7.31:1 for s
 - **Catalog:** a clear page title, scrollable genre chips, native genre/sort selects, result counts and pagination. Active filters can be cleared in one action; independent genre/sort state remains encoded in the URL.
 - **Quick view:** native modal, artwork, title, metadata, synopsis, Watch now, My List and Full details. It mounts no player. Escape, close and backdrop dismissal restore focus to the originating card. The catalog's scroll position and filters remain intact.
 - **Title:** a dedicated named route, full synopsis, facts and related titles. Primary action starts playback.
-- **Watch:** title context, large player, source buttons, fullscreen/reload controls and optional TV episode selection. Server 1 is VidLink, Server 2 Videasy, Server 3 VidSrc.
+- **Watch:** title context, large player, source buttons, reload and an external-player link, plus optional TV episode selection. The separate fullscreen button below videos has been removed; the embedded player retains its own fullscreen capability. Server 1 is VidLink, Server 2 Videasy, Server 3 VidSrc.
 - **Settings:** consistent fields, validation, save/reset feedback and labelled server groups.
 
 ## States and limits
 
-Focus/hover/selected/disabled treatments use the same control vocabulary throughout. Missing images have a neutral title-labelled state with an explicit “Artwork unavailable” label; photography is never invented. Metadata loading, catalog fetch errors/retry, no search results, empty My List, invalid player templates and fullscreen failures retain their existing recovery actions. A title in the archive does not imply a playable stream, and no progress bars or match percentages are fabricated.
+Focus/hover/selected/disabled treatments use the same control vocabulary throughout. Missing images have a neutral title-labelled state with an explicit “Artwork unavailable” label; photography is never invented. Metadata loading, catalog fetch errors/retry, no search results, empty My List and invalid player templates retain their existing recovery actions. A title in the archive does not imply a playable stream, and no progress bars or match percentages are fabricated.
 
 ## Validation and maintenance
 
-Browser checks cover the catalog → preview → watch flow, focus restoration, saving, filtering, source switching, fullscreen, direct-route reloads, actual chunk mappings and viewports from 320px to 1440px. Screenshots are captured under `test-results/` locally and are not committed. The final design pass completed 16 browser/data tests successfully and built all 30,014 static title/watch entry points. Desktop preview, mobile catalog and desktop/mobile player screenshots were also inspected. Playback frames in QA used controlled content; actual provider stream availability was not verified.
+Browser checks cover the catalog → preview → watch flow, focus restoration, saving, filtering, source switching, absence of the separate fullscreen button, direct-route reloads, actual chunk mappings and viewports from 320px to 1440px. Screenshots are captured under `test-results/` locally and are not committed. The final design pass completed 16 browser/data tests successfully and built all 30,014 static title/watch entry points. Desktop preview, mobile catalog and desktop/mobile player screenshots were also inspected. Playback frames in QA used controlled content; actual provider stream availability was not verified.
 
 New components should use existing semantic tokens and controls first. Add a token only for a recurring role, not for one screen. Any change to the catalog or playback flow should retain a keyboard path, a mobile layout and a useful error/empty state.

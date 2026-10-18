@@ -305,8 +305,8 @@ test("preview closes with Escape, restores focus, and opens the watch page", asy
   await expect(page).toHaveURL(/dune-part-two-693134\/watch$/);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator("iframe")).toHaveAttribute("src", "https://vidlink.pro/movie/693134");
-  await page.getByRole("button", { name: "Fullscreen", exact: true }).click();
-  await expect.poll(() => page.evaluate(() => Boolean(document.fullscreenElement))).toBe(true);
+  await expect(page.getByRole("button", { name: "Fullscreen", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reload player", exact: true })).toBeVisible();
 });
 
 test("mobile preview fits the viewport and saves without starting playback", async ({ page }) => {
