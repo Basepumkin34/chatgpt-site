@@ -1,10 +1,9 @@
-import "@fontsource/dm-sans/latin-400.css";
-import "@fontsource/dm-sans/latin-500.css";
-import "@fontsource/dm-sans/latin-600.css";
-import "@fontsource/dm-sans/latin-700.css";
-import "@fontsource/manrope/latin-600.css";
-import "@fontsource/manrope/latin-700.css";
-import "@fontsource/manrope/latin-800.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/playfair-display/latin-400.css";
+import "@fontsource/playfair-display/latin-500.css";
+import "@fontsource/playfair-display/latin-600.css";
 import React, {
   useEffect,
   useMemo,
@@ -37,7 +36,6 @@ import {
   Settings as Gear,
   Bookmark,
   X,
-  Clapperboard,
   Film,
   Info,
   Star,
@@ -62,13 +60,7 @@ const useVault = () => useContext(VaultContext);
 function Brand() {
   return (
     <Link className="brand" to="/" aria-label="Recepeit Vault home">
-      <span className="brand-symbol">
-        <Clapperboard size={22} />
-      </span>
-      <span>
-        recepeit<span>vault</span>
-      </span>
-      <i />
+      <span className="brand-wordmark">Recepeit Vault</span>
     </Link>
   );
 }
@@ -176,7 +168,7 @@ function Shell() {
             aria-label="Search the vault"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search the vault"
+            placeholder="Search titles"
           />
           <button aria-label="Submit search" type="submit">
             <ArrowUpRight size={16} />
@@ -315,10 +307,8 @@ function TitlePreview({ summary, onClose }) {
       <div className="preview-image">
         <Artwork title={title} kind="backdrop" priority />
         <span className="preview-image-shade" />
-        <span className="preview-category">{title.type === "Movies" ? "FILM" : "SERIES"} / RECEPEIT VAULT</span>
       </div>
       <div className="preview-body">
-        <p className="eyebrow">YOUR NEXT WATCH</p>
         <h2>{title.name}</h2>
         <div className="title-meta">
           <span>{title.year || "Year not listed"}</span>
@@ -400,21 +390,8 @@ function Home() {
         <Artwork title={selected} kind="backdrop" priority />
         <div className="spotlight-shade" />
         <div className="spotlight-content" key={selected.id}>
-          <p className="eyebrow">
-            <span className="status-line" /> IN THE SPOTLIGHT{" "}
-            <span className="feature-number">
-              0{feature + 1} / 0{choices.length}
-            </span>
-          </p>
-          <h1 aria-label={selected.name}>
-            {selected.name === "Dune: Part Two" ? (
-              <>
-                DUNE<span className="subtitle">PART TWO</span>
-              </>
-            ) : (
-              selected.name
-            )}
-          </h1>
+          <p className="eyebrow">Featured film</p>
+          <h1>{selected.name}</h1>
           <div className="title-meta">
             <span>{selected.year}</span>
             <span>{selected.genre}</span>
@@ -434,6 +411,7 @@ function Home() {
             </button>
             <button
               className="round-button"
+              aria-pressed={saved.includes(selected.id)}
               aria-label={`${saved.includes(selected.id) ? "Remove" : "Save"} featured ${selected.name}`}
               onClick={() => toggle(selected)}
             >
@@ -446,7 +424,7 @@ function Home() {
           </div>
         </div>
         <div className="spotlight-bottom">
-          <span>THE VAULT COLLECTION</span>
+          <span className="feature-number">{feature + 1} / {choices.length}</span>
           <div>
             <button
               className="round-button"
@@ -468,10 +446,6 @@ function Home() {
         </div>
       </section>
       <section className="preview-section" aria-label="Choose a movie preview">
-        <div className="preview-heading">
-          <span className="eyebrow">THE SPOTLIGHT SELECTION</span>
-          <span>Six films. Select a preview.</span>
-        </div>
         <div className="preview-strip">
           {choices.map((t, i) => (
             <button
@@ -483,22 +457,12 @@ function Home() {
             >
               <Artwork title={t} kind="backdrop" />
               <span>
-                <b>{String(i + 1).padStart(2, "0")}</b>
                 {t.name}
               </span>
-              <i />
             </button>
           ))}
         </div>
       </section>
-      <div className="vault-stats">
-        <span className="eyebrow">THE COMPLETE CATALOG</span>
-        <span>
-          {loading
-            ? "Opening the archive…"
-            : `${counts.movies.toLocaleString()} movies · ${counts.tv.toLocaleString()} series`}
-        </span>
-      </div>
       {error && (
         <div className="inline-error" role="alert">
           {error}
@@ -506,7 +470,16 @@ function Home() {
         </div>
       )}
       <section className="discovery-links" aria-label="Browse by mood">
-        <div><span className="eyebrow">MAKE IT A MOVIE NIGHT</span><h2>What are you in the mood for?</h2></div>
+        <div className="discovery-heading">
+          <h2>Browse by mood</h2>
+          <div className="vault-stats">
+            <span>
+              {loading
+                ? "Opening the archive…"
+                : `${counts.movies.toLocaleString()} movies · ${counts.tv.toLocaleString()} series`}
+            </span>
+          </div>
+        </div>
         <div className="discovery-genres">
           {["Sci-Fi", "Thriller", "Drama", "Comedy"].map((genre) => (
             <Link key={genre} to={`/movies?genre=${encodeURIComponent(genre)}`}>{genre}<ArrowUpRight size={17} /></Link>
@@ -515,41 +488,23 @@ function Home() {
       </section>
       {recentTitles.length > 0 && (
         <Rail
-          label="RECENTLY OPENED"
           title="Back to what caught your eye"
           items={recentTitles}
           wide
         />
       )}
       <Rail
-        label="CURATED"
         title="Featured films"
         items={choices}
         to="/movies"
         wide
       />
       <Rail
-        label="SELECTED SERIES"
         title="Featured series"
         items={titles.filter((t) => t.type === "TV Shows").slice(0, 10)}
         to="/tv"
       />
-      <section className="collection-feature">
-        <Artwork
-          title={titles.find((t) => t.id === "movie-335984") || selected}
-          kind="backdrop"
-        />
-        <div>
-          <p className="eyebrow">WORLDS WORTH GETTING LOST IN</p>
-          <h2>Science fiction.</h2>
-          <p>Distant worlds, alternate realities, and what comes next.</p>
-          <Link className="button light-outline" to="/movies?genre=Sci-Fi">
-            Explore sci-fi <ArrowUpRight size={16} />
-          </Link>
-        </div>
-      </section>
       <Rail
-        label="FROM THE ARCHIVE"
         title="Highly rated by viewers"
         items={titles
           .filter((t) => t.rating >= 8 && t.type === "Movies")
@@ -624,23 +579,13 @@ function Library({ type, savedOnly = false, search = false }) {
   return (
     <div className="library-page">
       <div className="library-intro">
-        <p className="eyebrow">
-          {savedOnly
-            ? "YOUR PERSONAL COLLECTION"
-            : search
-              ? "FIND YOUR NEXT WATCH"
-              : "OPEN THE VAULT"}
-        </p>
-        <h1>
-          {title}
-          <span>.</span>
-        </h1>
+        <h1>{title}</h1>
         <p>
           {savedOnly
-            ? "All the stories you’re saving for a good night."
+            ? "Save films and series to watch later."
             : search
               ? `Search across ${counts.total.toLocaleString()} titles.`
-              : `${(type === "Movies" ? counts.movies : counts.tv).toLocaleString()} ${type === "Movies" ? "films" : "series"} to explore. Pick a genre. Find your next obsession.`}
+              : `${(type === "Movies" ? counts.movies : counts.tv).toLocaleString()} ${type === "Movies" ? "films" : "series"}. Browse by genre or sort to find your next watch.`}
         </p>
       </div>
       {search && (

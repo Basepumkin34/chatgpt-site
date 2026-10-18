@@ -41,3 +41,7 @@ The supplied Framer project was retried using the Playwright MCP browser: naviga
 ## Shared design system pass
 
 The current implementation replaces the accumulated stylesheet overrides with a single component stylesheet and semantic foundations in `src/tokens.css`. It adds readable UI text, consistent controls, persistent navigation, genre entry points, desktop rail arrows and reversible filter clearing. The full brief, component rules, plugin availability, AIDesigner connection limits and verification scope are in `design-system.md`.
+
+## Clean cinematic redesign with authenticated AIDesigner
+
+AIDesigner's authenticated `generate_design` tool produced an Ultradesign reference (run `af9cdb80-c8bd-4190-80dd-9098f0f93a5e`). The implemented pass adopts its dark/cream/gold visual direction and bundled Playfair Display/Inter typography while retaining the real movie/TV data, existing routes and player. It removes decorative banners, a promotional section and catalog heading punctuation, and combines genres with actual catalog counts. A separate UI Consistency reviewer checked the result and verified a text-selection contrast correction. See `design-system.md` for source roles, local artifact paths, validation and explicit limits.
